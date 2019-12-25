@@ -6,6 +6,7 @@ use App\Entity\Post;
 use App\Forms\PostType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class PostController extends AbstractController
@@ -13,7 +14,7 @@ class PostController extends AbstractController
     /**
      * @Route("/posts", name="posts")
      */
-    public function index(Request $request)
+    public function posts(Request $request)
     {
         $newPost = new Post();
         $form = $this->createForm(PostType::class, $newPost);
@@ -34,5 +35,31 @@ class PostController extends AbstractController
             'posts' => $repo->findAll(),
             'form' => $form->createView()
         ]);
+    }
+
+    /**
+     * @Route("/post/{id}", name="post")
+     * @param Post $post
+     * @return Response
+     */
+    public function post(Post $post)
+    {
+        return $this->render('post/post.html.twig', ['post' => $post]);
+    }
+
+    /**
+     * @Route("/post/{id}/edit", name="editPost")
+     */
+    public function editPost(int $id)
+    {
+
+    }
+
+    /**
+     * @Route("/post/{id}/delete", name="deletePost")
+     */
+    public function deletePost(int $id)
+    {
+
     }
 }
