@@ -16,24 +16,10 @@ class PostController extends AbstractController
      */
     public function posts(Request $request)
     {
-        $newPost = new Post();
-        $form = $this->createForm(PostType::class, $newPost);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $product = $form->getData();
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($product);
-            $entityManager->flush();
-            return $this->redirectToRoute('posts');
-        }
-
         $doctrine = $this->getDoctrine();
         $repo = $doctrine->getRepository(Post::class);
         return $this->render('post/index.html.twig', [
-            'posts' => $repo->findAll(),
-            'form' => $form->createView()
+            'posts' => $repo->findAll()
         ]);
     }
 
@@ -49,10 +35,32 @@ class PostController extends AbstractController
 
     /**
      * @Route("/post/{id}/edit", name="editPost")
+     * @param int $id
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function editPost(int $id)
+    public function editPost(int $id, Request $request)
     {
+        $manager = $this->getDoctrine()->getManager()->getRepository(Post::class);
+        $post = $manager->find($id);
+        if (!$post) {
+            throw $this->createNotFoundException('Post not found');
+        }
+        $form = $this->createForm(PostType::class, $post);
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted() && $form->isValid()) {
+            $product = $form->getData();
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($product);
+            $entityManager->flush();
+            return $this->redirectToRoute('post',['id' => $post->getId()]);
+        }
+        return $this->render('post/edit_post.html.twig', [
+            'post' => $post,
+            'form' => $form->createView()
+        ]);
     }
 
     /**
