@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Post;
 use App\Forms\PostType;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,7 +26,7 @@ class PostController extends AbstractController
     }
 
     /**
-     * @Route("/post/{id}", name="post")
+     * @Route("/post/{id}", name="post", methods={"GET"})
      * @param Post $post
      * @return Response
      */
@@ -41,8 +43,8 @@ class PostController extends AbstractController
      */
     public function editPost(int $id, Request $request)
     {
-        $manager = $this->getDoctrine()->getManager()->getRepository(Post::class);
-        $post = $manager->find($id);
+        $repository = $this->getDoctrine()->getManager()->getRepository(Post::class);
+        $post = $repository->find($id);
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
         }
@@ -64,10 +66,17 @@ class PostController extends AbstractController
     }
 
     /**
-     * @Route("/post/{id}/delete", name="deletePost")
+     * @Route("/post/{id}", name="deletePost", methods={"DELETE"})
      */
     public function deletePost(int $id)
     {
-
+        $manager = $this->getDoctrine()->getManager();
+        $post = $manager->getRepository(Post::class)->find($id);
+        if (!$post) {
+            throw $this->createNotFoundException('Post not found');
+        }
+        $manager->remove($post);
+        $manager->flush();
+        return $this->redirectToRoute('posts');
     }
 }

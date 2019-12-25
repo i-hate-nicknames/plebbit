@@ -7,5 +7,34 @@
     <div class="title">{{ post.title }}</div>
     <div class="text">{{ post.text }}</div>
     <a href="{{ url('editPost', {id: post.id}) }}">Edit</a>
+    <button id="btn-remove" data-delete-url="{{ url('deletePost', {id: post.id}) }}">Delete</button>
 </div>
+{% endblock %}
+{% block javascripts %}
+<script type="text/javascript">
+    let removeBtn = document.getElementById('btn-remove');
+    let url = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
+
+    removeBtn.onclick = () => {
+        console.log(url);
+        let xhr = new XMLHttpRequest();
+        xhr.open("DELETE", url, true);
+        xhr.onload = function (e) {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    console.log(xhr.responseText);
+                    window.location = '/posts';
+                } else {
+                    console.error(xhr.statusText);
+                }
+            }
+        };
+        xhr.onerror = function (e) {
+            console.error(xhr.statusText);
+        };
+        xhr.send(null);
+    }
+
+
+</script>
 {% endblock %}
