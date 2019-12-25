@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block body %}
+<div class="post">
+    {{ form_start(form) }}
+    <input type="submit" value="submit">
+    {{ form_end(form) }}
+</div>
+{% endblock %}
