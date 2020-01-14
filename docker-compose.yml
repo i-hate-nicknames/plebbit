@@ -2,7 +2,7 @@ version: "3.1"
 services:
     webserver:
       image: nginx:alpine
-      container_name: gh-blog-nginx
+      container_name: plebbit-nginx
       working_dir: /application
       volumes:
           - .:/application
@@ -12,7 +12,7 @@ services:
 
     php-fpm:
       build: phpdocker/php-fpm
-      container_name: gh-blog-php-fpm
+      container_name: plebbit-fpm
       working_dir: /application
       volumes:
         - .:/application
@@ -21,14 +21,14 @@ services:
 
     mysql:
       image: mysql:5.7
-      container_name: gh-blog-db
+      container_name: plebbit-db
       working_dir: /application
       volumes:
         - .:/application
       environment:
         - MYSQL_ROOT_PASSWORD=root
-        - MYSQL_DATABASE=gh_blog
-        - MYSQL_USER=gh_blog
-        - MYSQL_PASSWORD=gh_blog
+        - MYSQL_DATABASE=plebbit
+        - MYSQL_USER=plebbit
+        - MYSQL_PASSWORD=plebbit
       ports:
         - "8032:3306"
