@@ -12,6 +12,20 @@
         {% endblock %}
     </head>
     <body>
+        <header>
+            <div class="welcome">
+                {% if is_granted('IS_AUTHENTICATED_REMEMBERED') %}
+                    Hello, {{ app.user.name }}!
+                    <div class="controls"><a href="{{ url('app_logout') }}">Logout</a></div>
+                {% else %}
+                    Hello, Guest!
+                    <div class="controls">
+                        <a href="{{ url('app_login') }}">Login</a>
+                        <a href="#">Register</a>
+                    </div>
+                {% endif %}
+            </div>
+        </header>
         {% block body %}{% endblock %}
         {% block javascripts %}{% endblock %}
     </body>
