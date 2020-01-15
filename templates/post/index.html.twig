@@ -6,7 +6,7 @@
 <div class="posts">
     {% for post in posts %}
     <div class="post">
-        <div class="title"><a href="{{ url('post', {'id': post.id}) }}">{{ post.title }}</a></div>
+        <div class="title"><a href="{{ url('post', {'id': post.id}) }}">{{ post.title }}</a> by <a href="{{ url('user', {id: post.author.id}) }}">{{ post.author.username }}</a></div>
         <div class="text">{{ post.text }}</div>
         <hr>
         <br>
