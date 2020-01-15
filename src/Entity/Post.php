@@ -37,6 +37,12 @@ class Post
      */
     private $updatedAt;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\District", inversedBy="posts")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $district;
+
     public function __construct()
     {
         $this->createdAt = new DateTime();
@@ -93,6 +99,18 @@ class Post
     public function setUpdatedAt(\DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getDistrict(): ?District
+    {
+        return $this->district;
+    }
+
+    public function setDistrict(?District $district): self
+    {
+        $this->district = $district;
 
         return $this;
     }
