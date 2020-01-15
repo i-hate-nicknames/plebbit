@@ -32,15 +32,9 @@ class AppFixtures extends Fixture
         $general = new District();
         $general->setName('general');
         $general->setDescription('This is the general district');
+        $manager->persist($general);
 
-        for ($i = 0; $i < self::NUM_POSTS; $i++) {
-            $post = new Post();
-            $post->setTitle('post # ' . $i);
-            $post->setText('post text');
-            $post->setDistrict($general);
-            $manager->persist($post);
-        }
-
+        $users = [];
         for ($i = 0; $i < self::NUM_USERS; $i++) {
             $user = new User();
             $user->setEmail("mail-$i@mail.com");
@@ -49,6 +43,16 @@ class AppFixtures extends Fixture
                 self::USER_PASSWORD_PREFIX . $i
             ));
             $manager->persist($user);
+            $users[] = $user;
+        }
+
+        for ($i = 0; $i < self::NUM_POSTS; $i++) {
+            $post = new Post();
+            $post->setTitle('post # ' . $i);
+            $post->setText('post text');
+            $post->setDistrict($general);
+            $post->setAuthor($users[$i % self::NUM_USERS]);
+            $manager->persist($post);
         }
 
         $manager->flush();
