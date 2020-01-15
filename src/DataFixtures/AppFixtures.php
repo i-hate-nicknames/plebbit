@@ -42,6 +42,7 @@ class AppFixtures extends Fixture
                 $user,
                 self::USER_PASSWORD_PREFIX . $i
             ));
+            $user->setName('user-' . $i);
             $manager->persist($user);
             $users[] = $user;
         }
