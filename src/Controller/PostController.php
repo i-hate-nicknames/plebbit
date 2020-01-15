@@ -41,7 +41,6 @@ class PostController extends AbstractController
      */
     public function post(Post $post)
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         return $this->render('post/post.html.twig', ['post' => $post]);
     }
 
