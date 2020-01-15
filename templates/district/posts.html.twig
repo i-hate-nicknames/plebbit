@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ district.name }}{% endblock %}
+
+{% block body %}
+<div class="district-info">Welcome to {{ district.name }} district!</div>
+<div class="posts">
+    {% for post in district.posts %}
+    <div class="post">
+        <div class="title"><a href="{{ url('post', {'id': post.id}) }}">{{ post.title }}</a> by <a href="{{ url('user', {id: post.author.id}) }}">{{ post.author.name }}</a></div>
+        <div class="text">{{ post.text }}</div>
+        <hr>
+        <br>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
