@@ -5,6 +5,7 @@
 {% block body %}
 <div class="post">
     <div class="title">{{ post.title }}</div>
+    <div class="author"><a href="{{ url('user', {id: post.author.id}) }}">{{ post.author.username }}</a></div>
     <div class="text">{{ post.text }}</div>
     <a href="{{ url('editPost', {id: post.id}) }}">Edit</a>
     <button id="btn-remove" data-delete-url="{{ url('deletePost', {id: post.id}) }}">Delete</button>
