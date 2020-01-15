@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\District;
 use App\Entity\Post;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -28,10 +29,15 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager)
     {
+        $general = new District();
+        $general->setName('general');
+        $general->setDescription('This is the general district');
+
         for ($i = 0; $i < self::NUM_POSTS; $i++) {
             $post = new Post();
             $post->setTitle('post # ' . $i);
             $post->setText('post text');
+            $post->setDistrict($general);
             $manager->persist($post);
         }
 
