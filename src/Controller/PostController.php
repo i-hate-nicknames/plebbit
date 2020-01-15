@@ -88,6 +88,7 @@ class PostController extends AbstractController
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
         }
+        $this->denyAccessUnlessGranted('delete', $post, 'You are not allowed to delete this post!');
         $manager->remove($post);
         $manager->flush();
         return $this->redirectToRoute('posts');
