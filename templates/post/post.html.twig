@@ -22,6 +22,7 @@
         <div class="comment">
             <div class="title">{{ comment.title }}</div>
             <div class="text">{{ comment.text }}</div>
+            <div class="author"><a href="{{ url('user', {id: comment.author.id}) }}">{{ comment.author.name }}</a></div>
         </div>
     {% endfor %}
     </div>
