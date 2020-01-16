@@ -27,6 +27,11 @@
     {% endfor %}
     </div>
     {% endif %}
+    <div class="comment-form">
+        {{ form_start(comment_form) }}
+        <input type="submit" value="submit">
+        {{ form_end(comment_form) }}
+    </div>
 </div>
 {% endblock %}
 {% block javascripts %}
