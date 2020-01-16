@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Comment;
 use App\Entity\District;
 use App\Entity\Post;
 use App\Entity\User;
@@ -14,6 +15,8 @@ class AppFixtures extends Fixture
     private const NUM_POSTS = 100;
 
     private const NUM_USERS = 10;
+
+    private const MAX_NUM_COMMENTS = 10;
 
     private const USER_PASSWORD_PREFIX = 'pass';
 
@@ -54,6 +57,14 @@ class AppFixtures extends Fixture
             $post->setDistrict($general);
             $post->setAuthor($users[$i % self::NUM_USERS]);
             $manager->persist($post);
+            // create n comments for each post, where n is (post_number % max_comments)
+            for ($j = 0; $j < ($i % self::MAX_NUM_COMMENTS); $j++) {
+                $comment = new Comment();
+                $comment->setTitle("post$i-comment-$j");
+                $comment->setText("Text $i $j");
+                $comment->setPost($post);
+                $manager->persist($comment);
+            }
         }
 
         $manager->flush();
