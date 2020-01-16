@@ -13,6 +13,19 @@
     {% if is_granted('delete', post) %}
     <button id="btn-remove" data-delete-url="{{ url('deletePost', {id: post.id}) }}">Delete</button>
     {% endif %}
+    <hr>
+    {% if post.comments.count == 0 %}
+    <div class="no-comments">No comments yet</div>
+    {% else %}
+    <div class="comments">
+    {% for comment in post.comments %}
+        <div class="comment">
+            <div class="title">{{ comment.title }}</div>
+            <div class="text">{{ comment.text }}</div>
+        </div>
+    {% endfor %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 {% block javascripts %}
