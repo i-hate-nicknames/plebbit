@@ -136,6 +136,7 @@ class Post
     }
 
     /**
+     * @ORM\PrePersist
      * @ORM\PreUpdate
      */
     public function setUpdatedAtValue()
