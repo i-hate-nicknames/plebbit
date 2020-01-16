@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\District;
 use App\Entity\Post;
 use App\Entity\User;
+use App\Forms\CommentType;
 use App\Forms\PostType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -12,6 +14,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use function var_export;
 
 class PostController extends AbstractController
 {
@@ -41,13 +44,31 @@ class PostController extends AbstractController
     // todo: add submit post method
 
     /**
-     * @Route("/post/{id}", name="post", methods={"GET"})
+     * @Route("/post/{id}", name="post", methods={"GET", "POST"})
      * @param Post $post
      * @return Response
      */
-    public function post(Post $post)
+    public function post(Request $request, Post $post)
     {
-        return $this->render('post/post.html.twig', ['post' => $post]);
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        /** @var User $user */
+        $user = $this->getUser();
+        $comment = new Comment();
+        $comment->setPost($post);
+        $comment->setAuthor($user);
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $comment = $form->getData();
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($comment);
+            $entityManager->flush();
+            return $this->redirectToRoute('post', ['id' => $post->getId()]);
+        }
+        return $this->render('post/post.html.twig', [
+            'post' => $post,
+            'comment_form' => $form->createView()
+        ]);
     }
 
     /**
@@ -122,10 +143,9 @@ class PostController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $product = $form->getData();
-
+            $post = $form->getData();
             $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($product);
+            $entityManager->persist($post);
             $entityManager->flush();
             return $this->redirectToRoute('post',['id' => $post->getId()]);
         }
