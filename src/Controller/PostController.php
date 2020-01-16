@@ -2,11 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\District;
 use App\Entity\Post;
+use App\Entity\User;
 use App\Forms\PostType;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -62,17 +64,38 @@ class PostController extends AbstractController
             throw $this->createNotFoundException('Post not found');
         }
         $form = $this->createForm(PostType::class, $post);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $product = $form->getData();
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($product);
-            $entityManager->flush();
-            return $this->redirectToRoute('post',['id' => $post->getId()]);
+        $redirect = $this->handlePostForm($request, $post, $form);
+        if (null !== $redirect) {
+            return $redirect;
         }
-        return $this->render('post/edit_post.html.twig', [
+        return $this->render('post/edit.html.twig', [
+            'post' => $post,
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/posts/submit", name="submitPost")
+     * @param Request $request
+     * @return RedirectResponse|Response|null
+     */
+    public function submitPost(Request $request)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        /** @var User $user */
+        $user = $this->getUser();
+        $post = new Post();
+        $post->setAuthor($user);
+        $districtRepository = $this->getDoctrine()->getRepository(District::class);
+        // todo: use current district when this method is moved to district controller
+        $district = $districtRepository->findOneBy(['name' => 'general']);
+        $post->setDistrict($district);
+        $form = $this->createForm(PostType::class, $post);
+        $redirect = $this->handlePostForm($request, $post, $form);
+        if (null !== $redirect) {
+            return $redirect;
+        }
+        return $this->render('post/edit.html.twig', [
             'post' => $post,
             'form' => $form->createView()
         ]);
@@ -92,5 +115,20 @@ class PostController extends AbstractController
         $manager->remove($post);
         $manager->flush();
         return $this->redirectToRoute('posts');
+    }
+
+    private function handlePostForm(Request $request, Post $post, FormInterface $form): ?RedirectResponse
+    {
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $product = $form->getData();
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($product);
+            $entityManager->flush();
+            return $this->redirectToRoute('post',['id' => $post->getId()]);
+        }
+        return null;
     }
 }

@@ -1,6 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ post.title }}{% endblock %}
+{% block title %}
+    {% if (post.title is null) %}
+    New post
+    {% else %}
+    Editing {{ post.title }}
+    {% endif %}
+{% endblock %}
 
 {% block body %}
 <div class="post">
