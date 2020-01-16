@@ -63,6 +63,7 @@ class AppFixtures extends Fixture
                 $comment->setTitle("post$i-comment-$j");
                 $comment->setText("Text $i $j");
                 $comment->setPost($post);
+                $comment->setAuthor($users[$j % self::NUM_USERS]);
                 $manager->persist($comment);
             }
         }
