@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Post
 {
@@ -48,13 +49,6 @@ class Post
      * @ORM\JoinColumn(nullable=false)
      */
     private $author;
-
-    public function __construct()
-    {
-        $this->createdAt = new DateTime();
-        $this->updatedAt = new DateTime();
-    }
-
 
     public function getId(): ?int
     {
@@ -131,5 +125,21 @@ class Post
         $this->author = $author;
 
         return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAtValue()
+    {
+        $this->createdAt = new \DateTime();
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedAtValue()
+    {
+        $this->updatedAt = new \DateTime();
     }
 }
