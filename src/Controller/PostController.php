@@ -45,7 +45,6 @@ class PostController extends AbstractController
 
     /**
      * @Route("/post/{id}", name="post", methods={"GET", "POST"})
-     * @param Post $post
      * @return Response
      */
     public function post(Request $request, Post $post)
@@ -53,6 +52,9 @@ class PostController extends AbstractController
         if ($request->getMethod() === Request::METHOD_POST) {
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         }
+        $repository = $this->getDoctrine()->getRepository(Comment::class);
+        $commentTree = $repository->fetchTree($post->getId());
+        $post->setComments($commentTree);
         /** @var User $user */
         $user = $this->getUser();
         $comment = new Comment();

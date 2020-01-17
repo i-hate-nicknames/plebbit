@@ -194,4 +194,9 @@ class Post
 
         return $this;
     }
+
+    public function setComments(ArrayCollection $commentTree)
+    {
+        $this->comments = $commentTree;
+    }
 }

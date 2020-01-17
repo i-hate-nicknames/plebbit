@@ -4,7 +4,9 @@ namespace App\Repository;
 
 use App\Entity\Comment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use ReflectionProperty;
 
 /**
  * @method Comment|null find($id, $lockMode = null, $lockVersion = null)
@@ -47,4 +49,39 @@ class CommentRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function fetchTree(int $postId)
+    {
+        $roots = new ArrayCollection();
+        $commentsFlat = $this->createQueryBuilder('c')
+            ->select('c,u')
+            ->andWhere('c.post = :post_id')
+            ->setParameter('post_id', $postId)
+            ->leftJoin('c.author', 'u')
+            ->getQuery()
+            ->getResult();
+
+        // basically, what we do here is set "children" property of every
+        // comment to be "initialized". This is doctrine way to tell
+        // "you don't need to fetch it from db".
+        // since we want to get all comments in a single query and build the tree ourselves,
+        // we tell doctrine to avoid going to database when children property is accessed
+        /** @var ReflectionProperty $prop */
+        $prop = $this->getClassMetadata()->reflFields['children'];
+        /** @var Comment $comment */
+        foreach ($commentsFlat as $comment) {
+            // instead of accessing through the getter (which immediately will force db fetch)
+            // we access this field through reflection.
+            // getValue will return a \Doctrine\ORM\PersistentCollection, which allows
+            // to disable reloading
+            $prop->getValue($comment)->setInitialized(true);
+            if ($comment->getParent() === null) {
+                $roots->add($comment);
+            } else {
+                $prop->getValue($comment->getParent())->setInitialized(true);
+                $comment->getParent()->addChild($comment);
+            }
+        }
+        return $roots;
+    }
 }
