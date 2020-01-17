@@ -50,7 +50,9 @@ class PostController extends AbstractController
      */
     public function post(Request $request, Post $post)
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        if ($request->getMethod() === Request::METHOD_POST) {
+            $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        }
         /** @var User $user */
         $user = $this->getUser();
         $comment = new Comment();
