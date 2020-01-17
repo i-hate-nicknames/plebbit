@@ -9,16 +9,23 @@ use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use function random_int;
 
 class AppFixtures extends Fixture
 {
-    private const NUM_POSTS = 100;
+    private const NUM_POSTS = 5;
 
     private const NUM_USERS = 10;
 
     private const MAX_NUM_COMMENTS = 10;
 
     private const USER_PASSWORD_PREFIX = 'pass';
+
+    private const MAX_COMMENT_TREE_DEPTH = 2;
+
+    private const MAX_COMMENT_CHILDREN = 10;
+
+    private $commentCount = 0;
 
     /**
      * @var UserPasswordEncoderInterface
@@ -57,17 +64,65 @@ class AppFixtures extends Fixture
             $post->setDistrict($general);
             $post->setAuthor($users[$i % self::NUM_USERS]);
             $manager->persist($post);
+            // only generate comment trees for the first three posts
+            $commentDepth = ($i >= 3) ? 0 : self::MAX_COMMENT_TREE_DEPTH;
+            // only 3 children for the nested trees
+            $commentNumber = ($i >= 3) ? ($i % self::MAX_NUM_COMMENTS) : 3;
             // create n comments for each post, where n is (post_number % max_comments)
-            for ($j = 0; $j < ($i % self::MAX_NUM_COMMENTS); $j++) {
-                $comment = new Comment();
-                $comment->setTitle("post$i-comment-$j");
-                $comment->setText("Text $i $j");
-                $comment->setPost($post);
-                $comment->setAuthor($users[$j % self::NUM_USERS]);
-                $manager->persist($comment);
+            for ($j = 0; $j < $commentNumber; $j++) {
+                $this->generateCommentTree(
+                    $commentDepth,
+                    $commentNumber,
+                    "p:$i;r:$j",
+                    $manager,
+                    $users[$j % self::NUM_USERS],
+                    $post
+                );
             }
         }
 
         $manager->flush();
+    }
+
+    // TODO: generate a couple of specific comment tree patterns: a very shallow but long tree, a very nested tree
+    // both tall and nested (heated discussion)
+
+    /**
+     * Generate and persist a comment tree of given depth, each level having random number of children,
+     * at most $numChildren
+     * Return root comment
+     * @param int $depth
+     * @param int $numChildren
+     * @param string $text
+     * @param ObjectManager $manager
+     * @param User $author
+     * @param Post $post
+     * @return Comment
+     * @throws \Exception
+     */
+    private function generateCommentTree(
+        int $depth,
+        int $numChildren,
+        string $text,
+        ObjectManager $manager,
+        User $author,
+        Post $post
+    ): Comment {
+        $root = new Comment();
+        $this->commentCount++;
+        $printDepth = self::MAX_COMMENT_TREE_DEPTH - $depth;
+        $rootText = "$text d:$printDepth #:$this->commentCount";
+        $root->setTitle($rootText);
+        $root->setText($rootText);
+        $root->setAuthor($author);
+        $root->setPost($post);
+        if ($depth > 0) {
+            for ($i = 0; $i < $numChildren; $i++) {
+                $child = $this->generateCommentTree($depth-1, $numChildren, $text, $manager, $author, $post);
+                $root->addChild($child);
+            }
+        }
+        $manager->persist($root);
+        return $root;
     }
 }
