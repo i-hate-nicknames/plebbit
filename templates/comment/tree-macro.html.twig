@@ -1,0 +1,13 @@
+{% macro comment_tree(root) %}
+    {% import _self as tree %}
+    <div class="title">{{ root.title }}</div>
+    <div class="text">{{ root.text }}</div>
+    <div class="author"><a href="{{ url('user', {id: root.author.id}) }}">{{ root.author.name }}</a></div>
+    <div class="children">
+    {% for child in root.children %}
+        <div class="comment">
+            {{ tree.comment_tree(child) }}
+        </div>
+    {% endfor %}
+    </div>
+{% endmacro %}

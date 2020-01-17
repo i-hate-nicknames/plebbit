@@ -6,5 +6,14 @@ body {
         margin-bottom: 10px;
         padding: 10px;
         border: 1px solid lightblue;
+
+        .comments {
+            .comment {
+                padding: 10px;
+                .children {
+                    margin-left: 20px;
+                }
+            }
+        }
     }
 }
