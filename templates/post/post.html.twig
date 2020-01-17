@@ -3,6 +3,7 @@
 {% block title %}{{ post.title }}{% endblock %}
 
 {% block body %}
+    {% import 'comment/tree-macro.html.twig' as tree %}
 <div class="post">
     <div class="title">{{ post.title }}</div>
     <div class="created">Created: {{ post.createdAt.format('d.m.Y H:i:s') }}</div>
@@ -18,11 +19,9 @@
     <div class="no-comments">No comments yet</div>
     {% else %}
     <div class="comments">
-    {% for comment in post.comments %}
-        <div class="comment">
-            <div class="title">{{ comment.title }}</div>
-            <div class="text">{{ comment.text }}</div>
-            <div class="author"><a href="{{ url('user', {id: comment.author.id}) }}">{{ comment.author.name }}</a></div>
+    {% for comment in post.rootComments %}
+        <div class="comment root">
+        {{ tree.comment_tree(comment)  }}
         </div>
     {% endfor %}
     </div>

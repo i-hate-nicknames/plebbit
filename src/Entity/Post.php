@@ -164,6 +164,14 @@ class Post
         return $this->comments;
     }
 
+    public function getRootComments(): Collection
+    {
+        return $this->comments->filter(function ($child) {
+            /** @var Comment $child */
+            return $child->getParent() === null;
+        });
+    }
+
     public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {
