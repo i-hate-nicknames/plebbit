@@ -88,6 +88,7 @@ class PostController extends AbstractController
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
         }
+        $this->denyAccessUnlessGranted('edit', $post);
         $form = $this->createForm(PostType::class, $post);
         $redirect = $this->handlePostForm($request, $post, $form);
         if (null !== $redirect) {
