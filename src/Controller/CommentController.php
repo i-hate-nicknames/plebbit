@@ -34,4 +34,31 @@ class CommentController extends AbstractController
         $entityManager->flush();
         return $this->redirectToRoute('posts');
     }
+
+    /**
+     * @Route("/post/{id}", name="post", methods={"POST"})
+     * @return Response
+     */
+    public function addComment(Request $request, Post $post)
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $comment = new Comment();
+        $comment->setAuthor($user);
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $comment = $form->getData();
+            $post->addComment($comment);
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($comment);
+            $entityManager->persist($post);
+            $entityManager->flush();
+            return $this->redirectToRoute('post', ['id' => $post->getId()]);
+        }
+        return $this->render('post/post.html.twig', [
+            'post' => $post,
+            'comment_form' => $form->createView()
+        ]);
+    }
 }
