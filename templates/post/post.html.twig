@@ -38,10 +38,7 @@
 {% block javascripts %}
 <script type="text/javascript">
     // todo: srsly at least rewrite this 1999 shit in fetch/axios
-    let removeBtn = document.getElementById('btn-remove');
-    let url = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
-
-    removeBtn.onclick = () => {
+    let deleteEntity = (url) => {
         console.log(url);
         let xhr = new XMLHttpRequest();
         xhr.open("DELETE", url, true);
@@ -59,7 +56,14 @@
             console.error(xhr.statusText);
         };
         xhr.send(null);
-    }
+    };
+
+    let removeBtn = document.getElementById('btn-remove');
+    let deletePostUrl = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
+
+    removeBtn.onclick = () => {
+        deleteEntity(deletePostUrl)
+    };
 
 
 </script>
