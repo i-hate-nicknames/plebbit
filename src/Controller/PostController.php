@@ -13,6 +13,15 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PostController extends AbstractController
 {
+
+    /**
+     * @Route("/", name="home")
+     * @return Response
+     */
+    public function home()
+    {
+        return new Response('feels like home :DDDDDDD');
+    }
     /**
      * @Route("/posts", name="posts")
      */
