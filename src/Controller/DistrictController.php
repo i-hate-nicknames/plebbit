@@ -26,6 +26,7 @@ class DistrictController extends AbstractController
      */
     public function posts(District $district)
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         return $this->render('district/posts.html.twig', [
             'district' => $district,
         ]);

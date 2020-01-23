@@ -50,9 +50,7 @@ class PostController extends AbstractController
      */
     public function post(Request $request, Post $post)
     {
-        if ($request->getMethod() === Request::METHOD_POST) {
-            $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        }
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         $repository = $this->getDoctrine()->getRepository(Comment::class);
         $commentTree = $repository->fetchTree($post->getId());
         $post->setComments($commentTree);
