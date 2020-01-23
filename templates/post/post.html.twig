@@ -10,7 +10,9 @@
     <div class="updated">Updated: {{ post.updatedAt.format('d.m.Y H:i:s') }}</div>
     <div class="author"><a href="{{ url('user', {id: post.author.id}) }}">{{ post.author.name }}</a></div>
     <div class="text">{{ post.text }}</div>
+    {% if is_granted('edit', post) %}
     <a href="{{ url('editPost', {id: post.id}) }}">Edit</a>
+    {% endif %}
     {% if is_granted('delete', post) %}
     <button id="btn-remove" data-delete-url="{{ url('deletePost', {id: post.id}) }}">Delete</button>
     {% endif %}
