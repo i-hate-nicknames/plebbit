@@ -61,6 +61,11 @@ class Comment
      */
     private $children;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isDeleted = false;
+
     public function __construct()
     {
         $this->children = new ArrayCollection();
@@ -199,6 +204,18 @@ class Comment
                 $child->setParent(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getIsDeleted(): ?bool
+    {
+        return $this->isDeleted;
+    }
+
+    public function setIsDeleted(bool $isDeleted): self
+    {
+        $this->isDeleted = $isDeleted;
 
         return $this;
     }
