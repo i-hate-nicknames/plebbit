@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use function count;
 use function var_export;
 
 class PostController extends AbstractController
@@ -44,7 +45,7 @@ class PostController extends AbstractController
     // todo: add submit post method
 
     /**
-     * @Route("/post/{id}", name="post", methods={"GET", "POST"})
+     * @Route("/post/{id}", name="addComment", methods={"GET"})
      * @return Response
      */
     public function post(Request $request, Post $post)
@@ -58,17 +59,8 @@ class PostController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
         $comment = new Comment();
-        $comment->setPost($post);
         $comment->setAuthor($user);
         $form = $this->createForm(CommentType::class, $comment);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $comment = $form->getData();
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($comment);
-            $entityManager->flush();
-            return $this->redirectToRoute('post', ['id' => $post->getId()]);
-        }
         return $this->render('post/post.html.twig', [
             'post' => $post,
             'comment_form' => $form->createView()
