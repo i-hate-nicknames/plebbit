@@ -1,8 +1,15 @@
 {% macro comment_tree(root) %}
-    {% import _self as tree %}
+{% import _self as tree %}
+{% if root.isDeleted %}
+    <div class="deleted">Comment was deleted by the user</div>
+{% else %}
     <div class="title">{{ root.title }}</div>
     <div class="text">{{ root.text }}</div>
     <div class="author"><a href="{{ url('user', {id: root.author.id}) }}">{{ root.author.name }}</a></div>
+    {% if is_granted('delete', root) %}
+        <a href="{{ url('deleteComment', {id: root.id}) }}" class="deleteComment">Delete</a>
+    {% endif %}
+{% endif %}
     <div class="children">
     {% for child in root.children %}
         <div class="comment">
