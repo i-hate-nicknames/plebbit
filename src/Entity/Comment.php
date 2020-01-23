@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity(repositoryClass="App\Repository\CommentRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Comment
+class Comment implements OwnedResource
 {
     /**
      * @ORM\Id()
@@ -69,6 +69,11 @@ class Comment
     public function __construct()
     {
         $this->children = new ArrayCollection();
+    }
+
+    public function getOwner(): User
+    {
+        return $this->getAuthor();
     }
 
     public function getId(): ?int

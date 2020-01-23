@@ -2,12 +2,13 @@
 
 namespace App\Security;
 
+use App\Entity\OwnedResource;
 use App\Entity\Post;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class PostVoter extends Voter
+class OwnedResourceVoter extends Voter
 {
     private const DELETE = 'delete';
     private const EDIT = 'edit';
@@ -18,8 +19,7 @@ class PostVoter extends Voter
             return false;
         }
 
-        // only vote on Post objects inside this voter
-        if (!$subject instanceof Post) {
+        if (!$subject instanceof OwnedResource) {
             return false;
         }
 
@@ -36,28 +36,22 @@ class PostVoter extends Voter
         }
 
         // you know $subject is a Post object, thanks to supports
-        /** @var Post $post */
-        $post = $subject;
+        /** @var OwnedResource $resource */
+        $resource = $subject;
 
         switch ($attribute) {
             case self::DELETE:
-                return $this->canDelete($post, $user);
             case self::EDIT:
-                return $this->canEdit($post, $user);
+                return $this->isOwner($user, $resource);
+            default:
+                throw new \LogicException('This code should not be reached!');
         }
-
-        throw new \LogicException('This code should not be reached!');
     }
 
     // todo: once moderation is implemented check for that here too
 
-    private function canDelete(Post $post, User $user)
+    private function isOwner(User $user, OwnedResource $resource)
     {
-        return $this->canEdit($post, $user);
-    }
-
-    private function canEdit(Post $post, User $user)
-    {
-        return $user === $post->getAuthor();
+        return $user === $resource->getOwner();
     }
 }

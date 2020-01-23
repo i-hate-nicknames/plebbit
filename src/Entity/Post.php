@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Post
+class Post implements OwnedResource
 {
     /**
      * @ORM\Id()
@@ -60,6 +60,11 @@ class Post
     public function __construct()
     {
         $this->comments = new ArrayCollection();
+    }
+
+    public function getOwner(): User
+    {
+        return $this->getAuthor();
     }
 
     public function getId(): ?int
