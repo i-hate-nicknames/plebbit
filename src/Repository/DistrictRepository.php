@@ -36,15 +36,18 @@ class DistrictRepository extends ServiceEntityRepository
     }
     */
 
-    /*
-    public function findOneBySomeField($value): ?District
+    /**
+     * @param string $name
+     * @return District|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getByName(string $name): ?District
     {
         return $this->createQueryBuilder('d')
-            ->andWhere('d.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('d.name = :name')
+            ->setParameter('name', $name)
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
-    */
 }

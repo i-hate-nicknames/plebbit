@@ -5,7 +5,7 @@
 {% block body %}
 {% for district in districts %}
     <div class="district">
-        <div class="name"><a href="{{ url('district', {id: district.id}) }}">{{ district.name }}</a></div>
+        <div class="name"><a href="{{ url('district', {name: district.name}) }}">{{ district.name }}</a></div>
     </div>
 {% endfor %}
 {% endblock %}

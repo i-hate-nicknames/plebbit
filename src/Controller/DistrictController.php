@@ -20,25 +20,34 @@ class DistrictController extends AbstractController
     }
 
     /**
-     * @Route("/district/{id}", name="district")
-     * @param District $district
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @Route("/d/{name}", name="district")
+     * @param string $name
+     * @return \Symfony\Component\HttpFoundation\Response|\Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function posts(District $district)
+    public function posts(string $name)
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $repository = $this->getDoctrine()->getRepository(District::class);
+        $district = $repository->getByName($name);
+        if (null === $district) {
+            return $this->createNotFoundException('District not found my friend');
+        }
         return $this->render('district/posts.html.twig', [
             'district' => $district,
         ]);
     }
 
     /**
-     * @Route("/district/{id}/details", name="districtDetails")
-     * @param District $district
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @Route("/d/{name}/details", name="districtDetails")
+     * @param string $name
+     * @return \Symfony\Component\HttpFoundation\Response|\Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    public function info(District $district)
+    public function info(string $name)
     {
+        $repository = $this->getDoctrine()->getRepository(District::class);
+        $district = $repository->getByName($name);
+        if (null === $district) {
+            return $this->createNotFoundException('District not found my friend');
+        }
         return $this->render('district/details.html.twig', [
             'district' => $district,
         ]);

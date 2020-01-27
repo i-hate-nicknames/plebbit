@@ -4,6 +4,7 @@
 
 {% block body %}
 <div class="district-info">Welcome to {{ district.name }} district!</div>
+<div class="descr">{{ district.description }}</div>
 <div class="posts">
     {% for post in district.posts %}
     <div class="post">
