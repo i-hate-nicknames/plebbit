@@ -11,7 +11,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @ORM\Entity(repositoryClass="App\Repository\DistrictRepository")
  * @UniqueEntity(fields={"name"}, message="District already exists")
  */
-class District
+class District implements OwnedResource
 {
     /**
      * @ORM\Id()
@@ -106,12 +106,12 @@ class District
         return $this;
     }
 
-    public function getOwner(): ?User
+    public function getOwner(): User
     {
         return $this->owner;
     }
 
-    public function setOwner(?User $owner): self
+    public function setOwner(User $owner): self
     {
         $this->owner = $owner;
 
