@@ -2,8 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\District;
+use App\Entity\User;
+use App\Forms\CommentType;
+use App\Forms\CreateDistrictType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class DistrictController extends AbstractController
@@ -50,6 +55,31 @@ class DistrictController extends AbstractController
         }
         return $this->render('district/details.html.twig', [
             'district' => $district,
+        ]);
+    }
+
+    /**
+     * @Route("/createDistrict", name="createDistrict")
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function createDistrict(Request $request)
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $district = new District();
+        $district->setOwner($user);
+        $form = $this->createForm(CreateDistrictType::class, $district);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $district = $form->getData();
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($district);
+            $entityManager->flush();
+            return $this->redirectToRoute('district', ['name' => $district->getName()]);
+        }
+        return $this->render('district/create.html.twig', [
+            'form' => $form->createView()
         ]);
     }
 }
