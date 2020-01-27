@@ -25,6 +25,15 @@ class AppFixtures extends Fixture
 
     private const MAX_COMMENT_CHILDREN = 10;
 
+    private const DISTRICTS = [
+        'general' => 'This is the general district containing generic and boring posts, welcome',
+        'existentialcrisis' => 'Important questions as to why continue living are welcome, answers even more so',
+        'news' => 'Happenigns around the world, big and not so much',
+        'videogames' => 'Successfully escaping sad and boring reality',
+        'shoplifting' => 'Shoplifters of the world, unite and take over',
+        'pornography' => "L'important c'est d'aimer"
+    ];
+
     private $commentCount = 0;
 
     /**
@@ -39,11 +48,6 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager)
     {
-        $general = new District();
-        $general->setName('general');
-        $general->setDescription('This is the general district');
-        $manager->persist($general);
-
         $users = [];
         for ($i = 0; $i < self::NUM_USERS; $i++) {
             $user = new User();
@@ -57,11 +61,23 @@ class AppFixtures extends Fixture
             $users[] = $user;
         }
 
+        $districts = [];
+        $i = 0;
+        foreach (self::DISTRICTS as $name => $desc) {
+            $district = new District();
+            $district->setName($name)
+                ->setDescription($desc)
+                ->setOwner($users[$i % self::NUM_USERS]);
+            $manager->persist($district);
+            $districts[] = $district;
+            $i++;
+        }
+
         for ($i = 0; $i < self::NUM_POSTS; $i++) {
             $post = new Post();
             $post->setTitle('post # ' . $i);
             $post->setText('post text');
-            $post->setDistrict($general);
+            $post->setDistrict($districts[$i % count($districts)]);
             $post->setAuthor($users[$i % self::NUM_USERS]);
             $manager->persist($post);
             // only generate comment trees for the first three posts

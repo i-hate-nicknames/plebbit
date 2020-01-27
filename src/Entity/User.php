@@ -50,10 +50,16 @@ class User implements UserInterface
      */
     private $comments;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\District", mappedBy="owner")
+     */
+    private $districts;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->districts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -202,6 +208,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($comment->getAuthor() === $this) {
                 $comment->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|District[]
+     */
+    public function getDistricts(): Collection
+    {
+        return $this->districts;
+    }
+
+    public function addDistrict(District $district): self
+    {
+        if (!$this->districts->contains($district)) {
+            $this->districts[] = $district;
+            $district->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDistrict(District $district): self
+    {
+        if ($this->districts->contains($district)) {
+            $this->districts->removeElement($district);
+            // set the owning side to null (unless already changed)
+            if ($district->getOwner() === $this) {
+                $district->setOwner(null);
             }
         }
 
