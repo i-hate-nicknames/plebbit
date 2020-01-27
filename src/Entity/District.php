@@ -35,6 +35,12 @@ class District
      */
     private $description;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="districts")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $owner;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -96,6 +102,18 @@ class District
     public function setDescription(string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): self
+    {
+        $this->owner = $owner;
 
         return $this;
     }
