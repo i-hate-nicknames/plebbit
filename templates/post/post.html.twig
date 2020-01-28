@@ -3,19 +3,42 @@
 {% block title %}{{ post.title }}{% endblock %}
 
 {% block body %}
+    {% import 'comment/tree-macro.html.twig' as tree %}
 <div class="post">
     <div class="title">{{ post.title }}</div>
+    <div class="created">Created: {{ post.createdAt.format('d.m.Y H:i:s') }}</div>
+    <div class="updated">Updated: {{ post.updatedAt.format('d.m.Y H:i:s') }}</div>
+    <div class="author"><a href="{{ url('user', {id: post.author.id}) }}">{{ post.author.name }}</a></div>
     <div class="text">{{ post.text }}</div>
+    {% if is_granted('edit', post) %}
     <a href="{{ url('editPost', {id: post.id}) }}">Edit</a>
+    {% endif %}
+    {% if is_granted('delete', post) %}
     <button id="btn-remove" data-delete-url="{{ url('deletePost', {id: post.id}) }}">Delete</button>
+    {% endif %}
+    <hr>
+    {% if post.comments.count == 0 %}
+    <div class="no-comments">No comments yet</div>
+    {% else %}
+    <div class="comments">
+    {% for comment in post.rootComments %}
+        <div class="comment root">
+        {{ tree.comment_tree(comment)  }}
+        </div>
+    {% endfor %}
+    </div>
+    {% endif %}
+    <div class="comment-form">
+        {{ form_start(comment_form) }}
+        <input type="submit" value="submit">
+        {{ form_end(comment_form) }}
+    </div>
 </div>
 {% endblock %}
 {% block javascripts %}
 <script type="text/javascript">
-    let removeBtn = document.getElementById('btn-remove');
-    let url = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
-
-    removeBtn.onclick = () => {
+    // todo: srsly at least rewrite this 1999 shit in fetch/axios
+    let deleteEntity = (url) => {
         console.log(url);
         let xhr = new XMLHttpRequest();
         xhr.open("DELETE", url, true);
@@ -33,7 +56,14 @@
             console.error(xhr.statusText);
         };
         xhr.send(null);
-    }
+    };
+
+    let removeBtn = document.getElementById('btn-remove');
+    let deletePostUrl = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
+
+    removeBtn.onclick = () => {
+        deleteEntity(deletePostUrl)
+    };
 
 
 </script>

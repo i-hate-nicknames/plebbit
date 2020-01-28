@@ -2,14 +2,20 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
+use App\Entity\District;
 use App\Entity\Post;
+use App\Entity\User;
+use App\Forms\CommentType;
 use App\Forms\PostType;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use function count;
+use function var_export;
 
 class PostController extends AbstractController
 {
@@ -27,6 +33,8 @@ class PostController extends AbstractController
      */
     public function posts(Request $request)
     {
+        // todo: delete this. Posts should be accessed through districts or
+        // from homepage which combines posts from all subscriptions
         $doctrine = $this->getDoctrine();
         $repo = $doctrine->getRepository(Post::class);
         return $this->render('post/index.html.twig', [
@@ -34,14 +42,27 @@ class PostController extends AbstractController
         ]);
     }
 
+    // todo: add submit post method
+
     /**
-     * @Route("/post/{id}", name="post", methods={"GET"})
-     * @param Post $post
+     * @Route("/post/{id}", name="addComment", methods={"GET"})
      * @return Response
      */
-    public function post(Post $post)
+    public function post(Request $request, Post $post)
     {
-        return $this->render('post/post.html.twig', ['post' => $post]);
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $repository = $this->getDoctrine()->getRepository(Comment::class);
+        $commentTree = $repository->fetchTree($post->getId());
+        $post->setComments($commentTree);
+        /** @var User $user */
+        $user = $this->getUser();
+        $comment = new Comment();
+        $comment->setAuthor($user);
+        $form = $this->createForm(CommentType::class, $comment);
+        return $this->render('post/post.html.twig', [
+            'post' => $post,
+            'comment_form' => $form->createView()
+        ]);
     }
 
     /**
@@ -57,18 +78,40 @@ class PostController extends AbstractController
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
         }
+        $this->denyAccessUnlessGranted('edit', $post);
         $form = $this->createForm(PostType::class, $post);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $product = $form->getData();
-
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($product);
-            $entityManager->flush();
-            return $this->redirectToRoute('post',['id' => $post->getId()]);
+        $redirect = $this->handlePostForm($request, $post, $form);
+        if (null !== $redirect) {
+            return $redirect;
         }
-        return $this->render('post/edit_post.html.twig', [
+        return $this->render('post/edit.html.twig', [
+            'post' => $post,
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/posts/submit", name="submitPost")
+     * @param Request $request
+     * @return RedirectResponse|Response|null
+     */
+    public function submitPost(Request $request)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        /** @var User $user */
+        $user = $this->getUser();
+        $post = new Post();
+        $post->setAuthor($user);
+        $districtRepository = $this->getDoctrine()->getRepository(District::class);
+        // todo: use current district when this method is moved to district controller
+        $district = $districtRepository->findOneBy(['name' => 'general']);
+        $post->setDistrict($district);
+        $form = $this->createForm(PostType::class, $post);
+        $redirect = $this->handlePostForm($request, $post, $form);
+        if (null !== $redirect) {
+            return $redirect;
+        }
+        return $this->render('post/edit.html.twig', [
             'post' => $post,
             'form' => $form->createView()
         ]);
@@ -84,8 +127,23 @@ class PostController extends AbstractController
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
         }
+        $this->denyAccessUnlessGranted('delete', $post, 'You are not allowed to delete this post!');
         $manager->remove($post);
         $manager->flush();
         return $this->redirectToRoute('posts');
+    }
+
+    private function handlePostForm(Request $request, Post $post, FormInterface $form): ?RedirectResponse
+    {
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $post = $form->getData();
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($post);
+            $entityManager->flush();
+            return $this->redirectToRoute('post',['id' => $post->getId()]);
+        }
+        return null;
     }
 }

@@ -2,16 +2,15 @@
 
 namespace App\Entity;
 
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\CommentRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Post implements OwnedResource
+class Comment implements OwnedResource
 {
     /**
      * @ORM\Id()
@@ -21,7 +20,7 @@ class Post implements OwnedResource
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=30)
      */
     private $title;
 
@@ -41,25 +40,35 @@ class Post implements OwnedResource
     private $updatedAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\District", inversedBy="posts")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $district;
+    private $post;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="posts")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
      */
     private $author;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="post", orphanRemoval=true)
+     * @ORM\ManyToOne(targetEntity="App\Entity\Comment", inversedBy="children")
      */
-    private $comments;
+    private $parent;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="parent")
+     */
+    private $children;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isDeleted = false;
 
     public function __construct()
     {
-        $this->comments = new ArrayCollection();
+        $this->children = new ArrayCollection();
     }
 
     public function getOwner(): User
@@ -120,26 +129,14 @@ class Post implements OwnedResource
         return $this;
     }
 
-    public function getDistrict(): ?District
+    public function getPost(): ?Post
     {
-        return $this->district;
+        return $this->post;
     }
 
-    public function setDistrict(?District $district): self
+    public function setPost(?Post $post): self
     {
-        $this->district = $district;
-
-        return $this;
-    }
-
-    public function getAuthor(): ?User
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(?User $author): self
-    {
-        $this->author = $author;
+        $this->post = $post;
 
         return $this;
     }
@@ -161,47 +158,70 @@ class Post implements OwnedResource
         $this->updatedAt = new \DateTime();
     }
 
+    public function getAuthor(): ?User
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?User $author): self
+    {
+        $this->author = $author;
+
+        return $this;
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): self
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
     /**
-     * @return Collection|Comment[]
+     * @return Collection|self[]
      */
-    public function getComments(): Collection
+    public function getChildren(): Collection
     {
-        return $this->comments;
+        return $this->children;
     }
 
-    public function getRootComments(): Collection
+    public function addChild(self $child): self
     {
-        return $this->comments->filter(function ($child) {
-            /** @var Comment $child */
-            return $child->getParent() === null;
-        });
-    }
-
-    public function addComment(Comment $comment): self
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments[] = $comment;
-            $comment->setPost($this);
+        if (!$this->children->contains($child)) {
+            $this->children[] = $child;
+            $child->setParent($this);
         }
 
         return $this;
     }
 
-    public function removeComment(Comment $comment): self
+    public function removeChild(self $child): self
     {
-        if ($this->comments->contains($comment)) {
-            $this->comments->removeElement($comment);
+        if ($this->children->contains($child)) {
+            $this->children->removeElement($child);
             // set the owning side to null (unless already changed)
-            if ($comment->getPost() === $this) {
-                $comment->setPost(null);
+            if ($child->getParent() === $this) {
+                $child->setParent(null);
             }
         }
 
         return $this;
     }
 
-    public function setComments(ArrayCollection $commentTree)
+    public function getIsDeleted(): ?bool
     {
-        $this->comments = $commentTree;
+        return $this->isDeleted;
+    }
+
+    public function setIsDeleted(bool $isDeleted): self
+    {
+        $this->isDeleted = $isDeleted;
+
+        return $this;
     }
 }

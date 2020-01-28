@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DistrictController!{% endblock %}
+
+{% block body %}
+<div class="name">{{ district.name }}</div>
+<div class="description">{{ district.description }}</div>
+<div class="back"><a href="{{ url('district', {id: district.id}) }}">Go back to posts</a></div>
+{% endblock %}
