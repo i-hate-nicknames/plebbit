@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DistrictController!{% endblock %}
+
+{% block body %}
+{% for district in districts %}
+    <div class="district">
+        <div class="name"><a href="{{ url('district', {name: district.name}) }}">{{ district.name }}</a></div>
+    </div>
+{% endfor %}
+{% endblock %}
