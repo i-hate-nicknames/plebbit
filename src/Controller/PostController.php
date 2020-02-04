@@ -45,7 +45,7 @@ class PostController extends AbstractController
     // todo: add submit post method
 
     /**
-     * @Route("/post/{id}", name="addComment", methods={"GET"})
+     * @Route("/post/{id}", name="post", methods={"GET"})
      * @return Response
      */
     public function post(Request $request, Post $post)
