@@ -18,7 +18,8 @@
     {% endif %}
     <hr>
     <a href="#" class="reply-form" data-comment-id="0">Reply</a>
-    <div class="comment-form">
+    <div class="comment-form-container" id="form-container-0"></div>
+    <div id="comment-form">
         {{ form_start(comment_form) }}
         <input type="submit" value="submit">
         {{ form_end(comment_form) }}
@@ -67,6 +68,15 @@
         deleteEntity(deletePostUrl)
     };
 
-
+    let commentForm = document.getElementById("comment-form");
+    let replyLinks = Array.from(document.getElementsByClassName("reply-form"));
+    replyLinks.forEach(link => {
+        link.addEventListener("click", event => {
+            event.preventDefault();
+            let commentId = link.getAttribute("data-comment-id");
+            let placeholder = document.getElementById("form-container-" + commentId);
+            placeholder.appendChild(commentForm);
+        });
+    })
 </script>
 {% endblock %}
