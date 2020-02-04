@@ -17,6 +17,13 @@
     <button id="btn-remove" data-delete-url="{{ url('deletePost', {id: post.id}) }}">Delete</button>
     {% endif %}
     <hr>
+    <a href="#" class="reply-form" data-comment-id="0">Reply</a>
+    <div class="comment-form">
+        {{ form_start(comment_form) }}
+        <input type="submit" value="submit">
+        {{ form_end(comment_form) }}
+    </div>
+    <hr>
     {% if post.comments.count == 0 %}
     <div class="no-comments">No comments yet</div>
     {% else %}
@@ -28,11 +35,6 @@
     {% endfor %}
     </div>
     {% endif %}
-    <div class="comment-form">
-        {{ form_start(comment_form) }}
-        <input type="submit" value="submit">
-        {{ form_end(comment_form) }}
-    </div>
 </div>
 {% endblock %}
 {% block javascripts %}
