@@ -36,10 +36,10 @@ class CommentController extends AbstractController
     }
 
     /**
-     * @Route("/post/{id}", name="post", methods={"POST"})
+     * @Route("/post/{id}/{parentId}", name="addComment", methods={"POST"})
      * @return Response
      */
-    public function addComment(Request $request, Post $post)
+    public function addComment(Request $request, Post $post, int $parentId)
     {
         // todo: consider moving this shit to a common place
         // I think trait?
@@ -47,6 +47,14 @@ class CommentController extends AbstractController
         $user = $this->getUser();
         $comment = new Comment();
         $comment->setAuthor($user);
+        if ($parentId != 0) {
+            $commentRepository = $this->getDoctrine()->getRepository(Comment::class);
+            $parent = $commentRepository->find($parentId);
+            if (null === $parent) {
+                $this->createNotFoundException("Parent comment is not found");
+            }
+            $parent->addChild($comment);
+        }
         $form = $this->createForm(CommentType::class, $comment);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {

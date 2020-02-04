@@ -61,6 +61,7 @@
         xhr.send(null);
     };
 
+    // todo: fix for posts that you do not own
     let removeBtn = document.getElementById('btn-remove');
     let deletePostUrl = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
 
@@ -68,15 +69,24 @@
         deleteEntity(deletePostUrl)
     };
 
-    let commentForm = document.getElementById("comment-form");
+    let commentFormBox = document.getElementById("comment-form");
     let replyLinks = Array.from(document.getElementsByClassName("reply-form"));
     replyLinks.forEach(link => {
         link.addEventListener("click", event => {
             event.preventDefault();
             let commentId = link.getAttribute("data-comment-id");
             let placeholder = document.getElementById("form-container-" + commentId);
-            placeholder.appendChild(commentForm);
+            placeholder.appendChild(commentFormBox);
         });
-    })
+    });
+
+    let handleForm = function (event) {
+        // todo: add parent id to the url here, submit programmatically
+        event.preventDefault();
+        console.log("hahaha");
+    };
+
+    let commentForm = commentFormBox.querySelector('form');
+    commentForm.addEventListener('submit', handleForm);
 </script>
 {% endblock %}
