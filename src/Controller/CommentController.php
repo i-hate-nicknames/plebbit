@@ -41,6 +41,8 @@ class CommentController extends AbstractController
      */
     public function addComment(Request $request, Post $post)
     {
+        // todo: consider moving this shit to a common place
+        // I think trait?
         /** @var User $user */
         $user = $this->getUser();
         $comment = new Comment();
