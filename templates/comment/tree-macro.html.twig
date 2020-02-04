@@ -9,6 +9,7 @@
     {% if is_granted('delete', root) %}
         <a href="{{ url('deleteComment', {id: root.id}) }}" class="deleteComment">Delete</a>
     {% endif %}
+    <a href="#" class="reply-form" data-comment-id="{{ root.id }}">Reply</a>
 {% endif %}
     <div class="children">
     {% for child in root.children %}
