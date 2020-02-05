@@ -1,28 +1,31 @@
+import axios from 'axios';
+import qs from 'qs';
+
 let deleteEntity = (url) => {
-    // todo: srsly at least rewrite this 1999 shit in fetch/axios
-    console.log(url);
-    let xhr = new XMLHttpRequest();
-    xhr.open("DELETE", url, true);
-    xhr.onload = function (e) {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                console.log(xhr.responseText);
-                window.location = '/posts';
-            } else {
-                console.error(xhr.statusText);
-            }
-        }
-    };
-    xhr.onerror = function (e) {
-        console.error(xhr.statusText);
-    };
-    xhr.send(null);
+
+    axios.delete(url)
+        .then((response) => { window.location = '/posts' })
+        .catch((err) => { console.log(err) });
 };
 
-let handleForm = function (event) {
-    // todo: add parent id to the url here, submit programmatically
+let submitComment = function (event) {
     event.preventDefault();
-    console.log("hahaha");
+    let commentFormBox = document.getElementById("comment-form");
+    let titleInput = document.getElementById('comment_title');
+    let textInput = document.getElementById('comment_text');
+    let tokenInput = document.getElementById('comment__token');
+    let parentId = commentFormBox.getAttribute("data-parent-comment");
+    let commentData = {
+        comment: {
+            title: titleInput.value,
+            text: textInput.value,
+            _token: tokenInput.value
+        }
+    };
+    // todo: fix window.location and pass url from twig template
+    axios.post(window.location + '/' + parentId, qs.stringify(commentData))
+        .then((_) => window.location = window.location)
+        .catch((err) => { console.log(err)})
 };
 
 let postPage = () => {
@@ -38,17 +41,17 @@ let postPage = () => {
     // init comment form
     let commentFormBox = document.getElementById("comment-form");
     let replyLinks = Array.from(document.getElementsByClassName("reply-form"));
+    let commentForm = commentFormBox.querySelector('form');
     replyLinks.forEach(link => {
         link.addEventListener("click", event => {
             event.preventDefault();
             let commentId = link.getAttribute("data-comment-id");
             let placeholder = document.getElementById("form-container-" + commentId);
+            commentFormBox.setAttribute("data-parent-comment", commentId);
             placeholder.appendChild(commentFormBox);
         });
     });
-
-    let commentForm = commentFormBox.querySelector('form');
-    commentForm.addEventListener('submit', handleForm);
+    commentForm.addEventListener('submit', submitComment);
 };
 
 export default postPage;
