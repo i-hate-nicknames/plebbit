@@ -2,12 +2,17 @@
 
 namespace App\Entity;
 
-use DateTime;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}}
+ * )
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -21,38 +26,45 @@ class Post implements OwnedResource
     private $id;
 
     /**
+     * @Groups({"read", "write"})
      * @ORM\Column(type="string", length=255)
      */
     private $title;
 
     /**
+     * @Groups({"read", "write"})
      * @ORM\Column(type="text")
      */
     private $text;
 
     /**
+     * @Groups({"read"})
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
 
     /**
+     * @Groups({"read"})
      * @ORM\Column(type="datetime")
      */
     private $updatedAt;
 
     /**
+     * @Groups({"read", "write"})
      * @ORM\ManyToOne(targetEntity="App\Entity\District", inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
      */
     private $district;
 
     /**
+     * @Groups({"read"})
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
      */
     private $author;
 
     /**
+     * @Groups({"read"})
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="post", orphanRemoval=true)
      */
     private $comments;
