@@ -45,7 +45,7 @@ class PostController extends AbstractController
     // todo: add submit post method
 
     /**
-     * @Route("/post/{id}", name="addComment", methods={"GET"})
+     * @Route("/post/{id}", name="post", methods={"GET"})
      * @return Response
      */
     public function post(Request $request, Post $post)
@@ -128,8 +128,8 @@ class PostController extends AbstractController
             throw $this->createNotFoundException('Post not found');
         }
         $this->denyAccessUnlessGranted('delete', $post, 'You are not allowed to delete this post!');
-        $manager->remove($post);
-        $manager->flush();
+//        $manager->remove($post);
+//        $manager->flush();
         return $this->redirectToRoute('posts');
     }
 

@@ -17,6 +17,14 @@
     <button id="btn-remove" data-delete-url="{{ url('deletePost', {id: post.id}) }}">Delete</button>
     {% endif %}
     <hr>
+    <a href="#" class="reply-form" data-comment-id="0">Reply</a>
+    <div class="comment-form-container" id="form-container-0"></div>
+    <div id="comment-form" data-parent-comment="0">
+        {{ form_start(comment_form) }}
+        <input type="submit" value="submit">
+        {{ form_end(comment_form) }}
+    </div>
+    <hr>
     {% if post.comments.count == 0 %}
     <div class="no-comments">No comments yet</div>
     {% else %}
@@ -28,43 +36,5 @@
     {% endfor %}
     </div>
     {% endif %}
-    <div class="comment-form">
-        {{ form_start(comment_form) }}
-        <input type="submit" value="submit">
-        {{ form_end(comment_form) }}
-    </div>
 </div>
-{% endblock %}
-{% block javascripts %}
-<script type="text/javascript">
-    // todo: srsly at least rewrite this 1999 shit in fetch/axios
-    let deleteEntity = (url) => {
-        console.log(url);
-        let xhr = new XMLHttpRequest();
-        xhr.open("DELETE", url, true);
-        xhr.onload = function (e) {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    console.log(xhr.responseText);
-                    window.location = '/posts';
-                } else {
-                    console.error(xhr.statusText);
-                }
-            }
-        };
-        xhr.onerror = function (e) {
-            console.error(xhr.statusText);
-        };
-        xhr.send(null);
-    };
-
-    let removeBtn = document.getElementById('btn-remove');
-    let deletePostUrl = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
-
-    removeBtn.onclick = () => {
-        deleteEntity(deletePostUrl)
-    };
-
-
-</script>
 {% endblock %}
