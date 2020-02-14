@@ -10,6 +10,7 @@ use App\Forms\CommentType;
 use App\Forms\PostType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,15 +37,25 @@ class CommentController extends AbstractController
     }
 
     /**
-     * @Route("/post/{id}", name="post", methods={"POST"})
+     * @Route("/post/{id}/{parentId}", name="addComment", methods={"POST"})
      * @return Response
      */
-    public function addComment(Request $request, Post $post)
+    public function addComment(Request $request, Post $post, int $parentId)
     {
+        // todo: consider moving this shit to a common place
+        // I think trait?
         /** @var User $user */
         $user = $this->getUser();
         $comment = new Comment();
         $comment->setAuthor($user);
+        if ($parentId != 0) {
+            $commentRepository = $this->getDoctrine()->getRepository(Comment::class);
+            $parent = $commentRepository->find($parentId);
+            if (null === $parent) {
+                $this->createNotFoundException("Parent comment is not found");
+            }
+            $parent->addChild($comment);
+        }
         $form = $this->createForm(CommentType::class, $comment);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -54,11 +65,13 @@ class CommentController extends AbstractController
             $entityManager->persist($comment);
             $entityManager->persist($post);
             $entityManager->flush();
-            return $this->redirectToRoute('post', ['id' => $post->getId()]);
+            return new JsonResponse([
+                'id' => $comment->getId(),
+                'parentId' => $parentId,
+                'title' => $comment->getTitle(),
+                'text' => $comment->getText()
+            ]);
         }
-        return $this->render('post/post.html.twig', [
-            'post' => $post,
-            'comment_form' => $form->createView()
-        ]);
+        return new JsonResponse(['errors' => $form->getErrors()], 400);
     }
 }
