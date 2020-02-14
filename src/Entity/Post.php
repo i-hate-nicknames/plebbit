@@ -10,8 +10,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}}
+ *     normalizationContext={"groups"={"post_read"}},
+ *     denormalizationContext={"groups"={"post_write"}}
  * )
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
  * @ORM\HasLifecycleCallbacks
@@ -26,45 +26,49 @@ class Post implements OwnedResource
     private $id;
 
     /**
-     * @Groups({"read", "write"})
+     * @Groups({"post_read", "write", "user_read"})
      * @ORM\Column(type="string", length=255)
      */
     private $title;
 
     /**
-     * @Groups({"read", "write"})
+     * @Groups({"post_read", "post_write", "user_read"})
      * @ORM\Column(type="text")
      */
     private $text;
 
     /**
-     * @Groups({"read"})
+     * @Groups({"post_read", "user_read"})
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
 
     /**
-     * @Groups({"read"})
+     * @Groups({"post_read", "user_read"})
      * @ORM\Column(type="datetime")
      */
     private $updatedAt;
 
     /**
-     * @Groups({"read", "write"})
+     * @Groups({"post_read", "user_read"})
      * @ORM\ManyToOne(targetEntity="App\Entity\District", inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
      */
     private $district;
 
     /**
-     * @Groups({"read"})
+     * @Groups({"post_read"})
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
      */
     private $author;
 
+    // todo: switch from tree to flat comments
+    // 1. fetch all comments for this post, limit by depth
+    // 2. build tree on frontend
+    // 3.
     /**
-     * @Groups({"read"})
+     * @Groups({"post_read"})
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="post", orphanRemoval=true)
      */
     private $comments;
