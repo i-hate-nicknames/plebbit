@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -13,10 +12,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 // the custom logic required for fetching posts
 // also if hot/top/controversial are to be implemented probably should be exposed as subresources too?
 /**
- * @ApiResource(
- *     normalizationContext={"groups"={"district_read"}},
- *     denormalizationContext={"groups"={"district_write"}}
- * )
  * @ORM\Entity(repositoryClass="App\Repository\DistrictRepository")
  * @UniqueEntity(fields={"name"}, message="District already exists")
  */

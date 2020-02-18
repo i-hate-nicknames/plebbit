@@ -1,0 +1,28 @@
+resources:
+  App\Entity\Post:
+    attributes:
+      normalization_context:
+        groups: ['post_read']
+      denormalization_context:
+        groups: ['post_write']
+
+  App\Entity\District:
+    attributes:
+      normalization_context:
+        groups: ['district_read']
+      denormalization_context:
+        groups: ['district_write']
+
+  App\Entity\Comment:
+    attributes:
+      normalization_context:
+        groups: ['comment_read']
+      denormalization_context:
+        groups: ['comment_write']
+
+  App\Entity\User:
+    attributes:
+      normalization_context:
+        groups: ['user_read']
+      denormalization_context:
+        groups: ['user_write']
