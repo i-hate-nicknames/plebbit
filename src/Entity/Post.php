@@ -2,10 +2,10 @@
 
 namespace App\Entity;
 
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
@@ -21,38 +21,49 @@ class Post implements OwnedResource
     private $id;
 
     /**
+     * @Groups({"post_read", "write", "user_read"})
      * @ORM\Column(type="string", length=255)
      */
     private $title;
 
     /**
+     * @Groups({"post_read", "post_write", "user_read"})
      * @ORM\Column(type="text")
      */
     private $text;
 
     /**
+     * @Groups({"post_read", "user_read"})
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
 
     /**
+     * @Groups({"post_read", "user_read"})
      * @ORM\Column(type="datetime")
      */
     private $updatedAt;
 
     /**
+     * @Groups({"post_read", "user_read"})
      * @ORM\ManyToOne(targetEntity="App\Entity\District", inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
      */
     private $district;
 
     /**
+     * @Groups({"post_read"})
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
      */
     private $author;
 
+    // todo: switch from tree to flat comments
+    // 1. fetch all comments for this post, limit by depth
+    // 2. build tree on frontend
+    // 3.
     /**
+     * @Groups({"post_read"})
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="post", orphanRemoval=true)
      */
     private $comments;

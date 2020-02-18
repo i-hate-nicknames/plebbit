@@ -2,11 +2,20 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+// todo: retrieving single comment by id is supposed to be used by "read further discussion" link
+// retrieving collection of comments on its own does not make any sense, unless maybe smth like recent comments
+// for a whole district
 /**
+ * @ApiResource(
+ *     normalizationContext={"groups"={"comment_read"}},
+ *     denormalizationContext={"groups"={"comment_write"}}
+ * )
  * @ORM\Entity(repositoryClass="App\Repository\CommentRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -20,38 +29,45 @@ class Comment implements OwnedResource
     private $id;
 
     /**
+     * @Groups({"post_read", "comment_read", "comment_write"})
      * @ORM\Column(type="string", length=30)
      */
     private $title;
 
     /**
+     * @Groups({"post_read", "comment_read", "comment_write"})
      * @ORM\Column(type="text")
      */
     private $text;
 
     /**
+     * @Groups({"post_read"})
      * @ORM\Column(type="datetime")
      */
     private $createdAt;
 
     /**
+     * @Groups({"post_read"})
      * @ORM\Column(type="datetime")
      */
     private $updatedAt;
 
     /**
+     * @Groups({"comment_write"}) // todo: restrict only to POST?
      * @ORM\ManyToOne(targetEntity="App\Entity\Post", inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
      */
     private $post;
 
     /**
+     * @Groups({"post_read"})
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
      */
     private $author;
 
     /**
+     * @Groups({"post_read", "comment_write"}) // todo: restrict only to POST?
      * @ORM\ManyToOne(targetEntity="App\Entity\Comment", inversedBy="children")
      */
     private $parent;
@@ -62,6 +78,7 @@ class Comment implements OwnedResource
     private $children;
 
     /**
+     * @Groups({"post_read", "comment_read", "comment_write"})
      * @ORM\Column(type="boolean")
      */
     private $isDeleted = false;

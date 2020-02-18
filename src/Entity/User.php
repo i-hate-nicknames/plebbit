@@ -6,12 +6,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User implements UserInterface
 {
+    // todo: consider removing and using name as id
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -35,21 +37,27 @@ class User implements UserInterface
      */
     private $password;
 
+    // todo: consider moving to a subresource: /user/posts
     /**
+     * @Groups({"user_read"})
      * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="author", orphanRemoval=true)
      */
     private $posts;
 
     /**
+     * @Groups({"user_read"})
      * @ORM\Column(type="string", length=30)
      */
     private $name;
 
+    // todo: consider moving to a subresource: /user/comments
     /**
+     * @Groups({"user_read"})
      * @ORM\OneToMany(targetEntity="App\Entity\Comment", mappedBy="author", orphanRemoval=true)
      */
     private $comments;
 
+    // todo: add read for current user only?
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\District", mappedBy="owner")
      */
