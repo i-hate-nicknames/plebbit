@@ -34,8 +34,14 @@ class RegistrationController extends AbstractController
             );
 
             $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($user);
-            $entityManager->flush();
+            try {
+                $entityManager->persist($user);
+                $entityManager->flush();
+            } catch (UniqueConstraintViolationException $e) {
+                $form->get('email')
+                    ->addError(new FormError('There is already an account associated with this email!'));
+                return $this->renderRegistration($form);
+            }
 
             // do anything else you need here, like send an email
 
