@@ -6,13 +6,18 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+// todo: this class will probably will have to be split into DTO and Doctrine entity, because of all
+// the custom logic required for fetching posts
+// also if hot/top/controversial are to be implemented probably should be exposed as subresources too?
 /**
  * @ORM\Entity(repositoryClass="App\Repository\DistrictRepository")
  * @UniqueEntity(fields={"name"}, message="District already exists")
  */
 class District implements OwnedResource
 {
+    // todo: consider removing and using name as id
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -21,16 +26,20 @@ class District implements OwnedResource
     private $id;
 
     /**
+     * @Groups({"district_read"})
      * @ORM\Column(type="string", length=100, unique=true)
      */
     private $name;
 
     /**
+     * @Groups({"district_read"})
      * @ORM\OneToMany(targetEntity="App\Entity\Post", mappedBy="district", orphanRemoval=true)
      */
     private $posts;
 
+    // todo: add write for owners
     /**
+     * @Groups({"district_read"})
      * @ORM\Column(type="text")
      */
     private $description;
