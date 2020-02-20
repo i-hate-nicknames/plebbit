@@ -148,6 +148,11 @@ class PostController extends AbstractController
     public function vote(Post $post, Request $request)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $manager = $this->getDoctrine()->getManager();
+        $repository = $manager->getRepository(PostVote::class);
+        /** @var User $user */
+        $user = $this->getUser();
+        $existingVote = $repository->findByUserAndPost($user, $post);
         $content = json_decode($request->getContent(), true);
         $value = $content['value'] ?? 0;
         if ($value != 1 && $value != -1) {
@@ -155,12 +160,19 @@ class PostController extends AbstractController
                 'error' => sprintf('Invalid vote value: %d', $value)
             ], 400);
         }
+        if ($existingVote !== null) {
+            $manager->remove($existingVote);
+            if ($value === $existingVote->getValue()) {
+                return new JsonResponse([], 204);
+            }
+            $manager->flush();
+        }
         $vote = new PostVote();
         $vote->setPost($post)
             ->setUser($this->getUser())
             ->setValue($value)
             ->setCreatedAt(new DateTime('now', new DateTimeZone('UTC')));
-        $manager = $this->getDoctrine()->getManager();
+
         try {
             $manager->persist($vote);
             $manager->flush();
@@ -169,7 +181,7 @@ class PostController extends AbstractController
                 'error' => 'You can only vote once'
             ], 400);
         }
-        return new JsonResponse([], 201);
+        return new JsonResponse([], 204);
     }
 
     private function handlePostForm(Request $request, Post $post, FormInterface $form): ?RedirectResponse
