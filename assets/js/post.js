@@ -4,18 +4,17 @@ import qs from 'qs';
 let deleteEntity = (url) => {
 
     axios.delete(url)
-        .then((response) => { window.location = '/posts' })
-        .catch((err) => { console.log(err) });
+        .then(response => window.location = '/posts')
+        .catch(err =>  console.log(err));
 };
 
-let makeVoteCallback = function (postId, voteValue) {
+let makeVoteCallback = function (voteUrl, voteValue) {
     return event => {
         event.preventDefault();
-        console.log("Voting " + voteValue);
+        axios.post(voteUrl, {'value': parseInt(voteValue)})
+            .then(_ => console.log('sraka'))
+            .catch(err => console.log(err));
     };
-    axios.delete("/")
-        .then((response) => { window.location = '/posts' })
-        .catch((err) => { console.log(err) });
 };
 
 let submitComment = function (event) {
@@ -39,6 +38,10 @@ let submitComment = function (event) {
 };
 
 let postPage = () => {
+    let postDataBox = document.getElementById('post-data');
+    let postId = postDataBox.getAttribute('data-post-id');
+    let voteUrl = postDataBox.getAttribute('data-vote-url');
+
     // init delete
     let removeBtn = document.getElementById('btn-remove');
     if (null !== removeBtn) {
@@ -69,8 +72,7 @@ let postPage = () => {
     voteBoxes.forEach(box => {
         let link = box.querySelector('a');
         let voteValue = link.getAttribute("data-vote-value");
-        let postId = link.getAttribute("data-post-id");
-        link.addEventListener("click", makeVoteCallback(postId, voteValue));
+        link.addEventListener("click", makeVoteCallback(voteUrl, voteValue));
     })
 };
 

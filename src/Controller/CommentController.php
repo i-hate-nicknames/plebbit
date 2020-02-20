@@ -37,7 +37,7 @@ class CommentController extends AbstractController
     }
 
     /**
-     * @Route("/post/{id}/{parentId}", name="addComment", methods={"POST"})
+     * @Route("/post/{id}/comment/{parentId}", name="addComment", methods={"POST"})
      * @return Response
      */
     public function addComment(Request $request, Post $post, int $parentId)

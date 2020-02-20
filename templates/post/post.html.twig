@@ -4,9 +4,15 @@
 
 {% block body %}
     {% import 'comment/tree-macro.html.twig' as tree %}
+    <div id="post-data"
+         style="display: none"
+         data-post-id="{{ post.id }}"
+         data-vote-url="{{ url('votePost', {id: post.id}) }}"
+    >
+    </div>
 <div class="post">
-    <div class="vote upvote"><a href="#" data-post-id="{{ post.id }}" data-vote-value="1">[+]</a></div>
-    <div class="vote downvote"><a href="#" data-post-id="{{ post.id }}"  data-vote-value="-1">[-]</a></div>
+    <div class="vote upvote"><a href="#" data-vote-value="1">[+]</a></div>
+    <div class="vote downvote"><a href="#" data-vote-value="-1">[-]</a></div>
     <div class="title">{{ post.title }}</div>
     <div class="created">Created: {{ post.createdAt.format('d.m.Y H:i:s') }}</div>
     <div class="updated">Updated: {{ post.updatedAt.format('d.m.Y H:i:s') }}</div>
