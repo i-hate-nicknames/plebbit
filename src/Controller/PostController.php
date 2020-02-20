@@ -26,7 +26,7 @@ class PostController extends AbstractController
      */
     public function home()
     {
-        return new Response('feels like home :DDDDDDD');
+        return new RedirectResponse($this->generateUrl('posts'));
     }
     /**
      * @Route("/posts", name="posts")
