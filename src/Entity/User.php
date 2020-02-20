@@ -65,11 +65,17 @@ class User implements UserInterface
      */
     private $districts;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\PostVote", mappedBy="user")
+     */
+    private $postVotes;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->districts = new ArrayCollection();
+        $this->postVotes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -249,6 +255,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($district->getOwner() === $this) {
                 $district->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|PostVote[]
+     */
+    public function getPostVotes(): Collection
+    {
+        return $this->postVotes;
+    }
+
+    public function addPostVote(PostVote $postVote): self
+    {
+        if (!$this->postVotes->contains($postVote)) {
+            $this->postVotes[] = $postVote;
+            $postVote->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePostVote(PostVote $postVote): self
+    {
+        if ($this->postVotes->contains($postVote)) {
+            $this->postVotes->removeElement($postVote);
+            // set the owning side to null (unless already changed)
+            if ($postVote->getUser() === $this) {
+                $postVote->setUser(null);
             }
         }
 
