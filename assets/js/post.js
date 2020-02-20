@@ -30,13 +30,14 @@ let submitComment = function (event) {
 
 let postPage = () => {
     // init delete
-    // todo: fix for posts that you do not own
     let removeBtn = document.getElementById('btn-remove');
-    let deletePostUrl = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
+    if (null !== removeBtn) {
+        let deletePostUrl = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
 
-    removeBtn.onclick = () => {
-        deleteEntity(deletePostUrl)
-    };
+        removeBtn.onclick = () => {
+            deleteEntity(deletePostUrl)
+        };
+    }
 
     // init comment form
     let commentFormBox = document.getElementById("comment-form");
