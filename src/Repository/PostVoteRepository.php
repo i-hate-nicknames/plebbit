@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Post;
 use App\Entity\PostVote;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -36,15 +38,15 @@ class PostVoteRepository extends ServiceEntityRepository
     }
     */
 
-    /*
-    public function findOneBySomeField($value): ?PostVote
+    public function findByUserAndPost(User $user, Post $post): ?PostVote
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('p.user = :user')
+            ->andWhere('p.post = :post')
+            ->setParameter('user', $user)
+            ->setParameter('post', $post)
             ->getQuery()
             ->getOneOrNullResult()
-        ;
+            ;
     }
-    */
 }
