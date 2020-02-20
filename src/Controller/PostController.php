@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use function count;
+use function json_decode;
 use function var_export;
 
 class PostController extends AbstractController
@@ -144,8 +145,9 @@ class PostController extends AbstractController
     public function vote(Post $post, Request $request)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $value = $request->request->get('value', 0);
-        if ($value != 1 || $value != -1) {
+        $content = json_decode($request->getContent(), true);
+        $value = $content['value'] ?? 0;
+        if ($value != 1 && $value != -1) {
             return new JsonResponse([
                 'error' => sprintf('Invalid vote value: %d', $value)
             ], 401);
