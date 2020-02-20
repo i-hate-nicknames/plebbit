@@ -5,11 +5,15 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Entity\District;
 use App\Entity\Post;
+use App\Entity\PostVote;
 use App\Entity\User;
 use App\Forms\CommentType;
 use App\Forms\PostType;
+use DateTime;
+use DateTimeZone;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -131,6 +135,30 @@ class PostController extends AbstractController
         $manager->remove($post);
         $manager->flush();
         return $this->redirectToRoute('posts');
+    }
+
+    // todo: implement via API platform
+    /**
+     * @Route("/post/{id}/votes", name="votePost", methods={"POST"})
+     */
+    public function vote(Post $post, Request $request)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $value = $request->request->get('value', 0);
+        if ($value != 1 || $value != -1) {
+            return new JsonResponse([
+                'error' => sprintf('Invalid vote value: %d', $value)
+            ], 401);
+        }
+        $vote = new PostVote();
+        $vote->setPost($post)
+            ->setUser($this->getUser())
+            ->setValue($value)
+            ->setCreatedAt(new DateTime('now', new DateTimeZone('UTC')));
+        $manager = $this->getDoctrine()->getManager();
+        $manager->persist($vote);
+        $manager->flush();
+        return new JsonResponse([], 201);
     }
 
     private function handlePostForm(Request $request, Post $post, FormInterface $form): ?RedirectResponse
