@@ -12,8 +12,8 @@ let makeVoteCallback = function (voteUrl, voteValue) {
     return event => {
         event.preventDefault();
         axios.post(voteUrl, {'value': parseInt(voteValue)})
-            .then(_ => console.log('sraka'))
-            .catch(err => console.log(err));
+            .then(_ => console.log('voted'))
+            .catch(err => console.log(err.response.data.error));
     };
 };
 

@@ -11,6 +11,8 @@ use App\Forms\CommentType;
 use App\Forms\PostType;
 use DateTime;
 use DateTimeZone;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use function count;
 use function json_decode;
+use function sprintf;
 use function var_export;
 
 class PostController extends AbstractController
@@ -150,7 +153,7 @@ class PostController extends AbstractController
         if ($value != 1 && $value != -1) {
             return new JsonResponse([
                 'error' => sprintf('Invalid vote value: %d', $value)
-            ], 401);
+            ], 400);
         }
         $vote = new PostVote();
         $vote->setPost($post)
@@ -158,8 +161,14 @@ class PostController extends AbstractController
             ->setValue($value)
             ->setCreatedAt(new DateTime('now', new DateTimeZone('UTC')));
         $manager = $this->getDoctrine()->getManager();
-        $manager->persist($vote);
-        $manager->flush();
+        try {
+            $manager->persist($vote);
+            $manager->flush();
+        } catch (UniqueConstraintViolationException $exception) {
+            return new JsonResponse([
+                'error' => 'You can only vote once'
+            ], 400);
+        }
         return new JsonResponse([], 201);
     }
 
