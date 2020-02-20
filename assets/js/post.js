@@ -8,6 +8,16 @@ let deleteEntity = (url) => {
         .catch((err) => { console.log(err) });
 };
 
+let makeVoteCallback = function (postId, voteValue) {
+    return event => {
+        event.preventDefault();
+        console.log("Voting " + voteValue);
+    };
+    axios.delete("/")
+        .then((response) => { window.location = '/posts' })
+        .catch((err) => { console.log(err) });
+};
+
 let submitComment = function (event) {
     event.preventDefault();
     let commentFormBox = document.getElementById("comment-form");
@@ -53,6 +63,15 @@ let postPage = () => {
         });
     });
     commentForm.addEventListener('submit', submitComment);
+
+    //init votes
+    let voteBoxes = Array.from(document.getElementsByClassName('vote'));
+    voteBoxes.forEach(box => {
+        let link = box.querySelector('a');
+        let voteValue = link.getAttribute("data-vote-value");
+        let postId = link.getAttribute("data-post-id");
+        link.addEventListener("click", makeVoteCallback(postId, voteValue));
+    })
 };
 
 export default postPage;
