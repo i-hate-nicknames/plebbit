@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PostVoteRepository")
+ * @ORM\Table(name="post_vote",uniqueConstraints={
+ *     @ORM\UniqueConstraint(name="vote_post_user", columns={"post_id", "user_id"})})
  */
 class PostVote
 {
