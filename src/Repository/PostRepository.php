@@ -3,8 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Post;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\Query\ResultSetMapping;
 
 /**
  * @method Post|null find($id, $lockMode = null, $lockVersion = null)
@@ -47,4 +49,49 @@ class PostRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function getPostsListing(User $user)
+    {
+        $sql = <<<SQL
+            SELECT rated.id, rated.title, rated.rating, rated.current_vote,
+                   -- calculate the number of comments for every post
+                   sum(CASE
+                           WHEN c.id IS NULL THEN 0
+                           ELSE 1
+                       END)
+                       AS comment_count
+            FROM (
+                     SELECT p.id, p.title, p.author_id,
+                            -- sum all the ratings, the posts that do not have a rating
+                            -- will get 0 due to the following CASE
+                            sum(CASE
+                                    WHEN pv.value IS NULL THEN 0
+                                    ELSE pv.value
+                                END) AS rating,
+                            -- calculate the voting status for current user
+                            sum(CASE
+                                    WHEN pv.user_id = 1 THEN pv.value
+                                    ELSE 0
+                                END) AS current_vote
+                     FROM post p
+                              LEFT JOIN post_vote pv ON p.id = pv.post_id
+                          -- filter only a single post
+                          -- WHERE p.id = 1
+                     GROUP BY p.id, p.title, p.author_id
+                 ) rated
+                     LEFT JOIN `comment` c ON rated.id = c.post_id
+            GROUP BY rated.id, rated.title, rated.rating, rated.current_vote
+SQL;
+        $rsm = new ResultSetMapping();
+        // todo: add joined result of author?
+        $rsm->addEntityResult(Post::class, 'p', 'post')
+            ->addFieldResult('p', 'id', 'id')
+            ->addFieldResult('p', 'title', 'title')
+            ->addScalarResult('rating', 'rating', \Doctrine\DBAL\Types\Type::INTEGER)
+            ->addScalarResult('comment_count', 'commentCount', \Doctrine\DBAL\Types\Type::INTEGER)
+            ->addScalarResult('current_vote', 'currentVote', \Doctrine\DBAL\Types\Type::INTEGER);
+        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+
+        return $query->getResult();
+    }
 }
