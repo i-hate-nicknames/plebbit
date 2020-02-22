@@ -50,10 +50,11 @@ class PostRepository extends ServiceEntityRepository
     }
     */
 
-    public function getPostsListing(User $user)
+    public function getPostsListing(?User $user)
     {
         $sql = <<<SQL
-            SELECT rated.id, rated.title, rated.rating, rated.current_vote,
+            SELECT rated.id, rated.title, rated.rating, rated.current_vote, u.name,
+                   rated.created_at, rated.updated_at, rated.author_id, u.name, u.email,
                    -- calculate the number of comments for every post
                    sum(CASE
                            WHEN c.id IS NULL THEN 0
@@ -61,7 +62,7 @@ class PostRepository extends ServiceEntityRepository
                        END)
                        AS comment_count
             FROM (
-                     SELECT p.id, p.title, p.author_id,
+                     SELECT p.id, p.title, p.author_id, p.created_at, p.updated_at,
                             -- sum all the ratings, the posts that do not have a rating
                             -- will get 0 due to the following CASE
                             sum(CASE
@@ -77,16 +78,26 @@ class PostRepository extends ServiceEntityRepository
                               LEFT JOIN post_vote pv ON p.id = pv.post_id
                           -- filter only a single post
                           -- WHERE p.id = 1
-                     GROUP BY p.id, p.title, p.author_id
+                          -- filter by district
+                          -- WHERE p.district_id = :id
+                     GROUP BY p.id, p.title, p.author_id, p.created_at, p.updated_at
                  ) rated
                      LEFT JOIN `comment` c ON rated.id = c.post_id
-            GROUP BY rated.id, rated.title, rated.rating, rated.current_vote
+                     JOIN user u on rated.author_id = u.id
+            GROUP BY rated.id, rated.title, rated.rating, rated.current_vote, u.name,
+                     rated.created_at, rated.updated_at, u.id, u.name, u.email
 SQL;
         $rsm = new ResultSetMapping();
         // todo: add joined result of author?
         $rsm->addEntityResult(Post::class, 'p', 'post')
             ->addFieldResult('p', 'id', 'id')
             ->addFieldResult('p', 'title', 'title')
+            ->addFieldResult('p', 'created_at', 'createdAt')
+            ->addFieldResult('p', 'updated_at', 'updatedAt')
+            ->addJoinedEntityResult(User::class, 'a', 'p', 'author')
+            ->addFieldResult('a', 'author_id', 'id')
+            ->addFieldResult('a', 'name', 'name')
+            ->addFieldResult('a', 'email', 'email')
             ->addScalarResult('rating', 'rating', \Doctrine\DBAL\Types\Type::INTEGER)
             ->addScalarResult('comment_count', 'commentCount', \Doctrine\DBAL\Types\Type::INTEGER)
             ->addScalarResult('current_vote', 'currentVote', \Doctrine\DBAL\Types\Type::INTEGER);
