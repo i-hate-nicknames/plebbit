@@ -25,7 +25,7 @@ class PostVote
     private $post;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="createdAt")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="postVotes")
      * @ORM\JoinColumn(nullable=false)
      */
     private $user;
