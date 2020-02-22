@@ -41,12 +41,14 @@ class PostController extends AbstractController
      */
     public function posts(Request $request)
     {
+
         // todo: delete this. Posts should be accessed through districts or
         // from homepage which combines posts from all subscriptions
         $doctrine = $this->getDoctrine();
-        $repo = $doctrine->getRepository(Post::class);
+        $repository = $doctrine->getRepository(Post::class);
+        $postsWithStats = $repository->getPostsListing($this->getUser());
         return $this->render('post/index.html.twig', [
-            'posts' => $repo->findAll()
+            'data' => $postsWithStats
         ]);
     }
 

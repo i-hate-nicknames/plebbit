@@ -52,6 +52,7 @@ class PostRepository extends ServiceEntityRepository
 
     public function getPostsListing(?User $user)
     {
+        $userId = ($user) ? $user->getId() : 0;
         $sql = <<<SQL
             SELECT rated.id, rated.title, rated.rating, rated.current_vote, u.name,
                    rated.created_at, rated.updated_at, rated.author_id, u.name, u.email,
@@ -71,7 +72,7 @@ class PostRepository extends ServiceEntityRepository
                                 END) AS rating,
                             -- calculate the voting status for current user
                             sum(CASE
-                                    WHEN pv.user_id = 1 THEN pv.value
+                                    WHEN pv.user_id = ? THEN pv.value
                                     ELSE 0
                                 END) AS current_vote
                      FROM post p
@@ -101,7 +102,7 @@ SQL;
             ->addScalarResult('rating', 'rating', \Doctrine\DBAL\Types\Type::INTEGER)
             ->addScalarResult('comment_count', 'commentCount', \Doctrine\DBAL\Types\Type::INTEGER)
             ->addScalarResult('current_vote', 'currentVote', \Doctrine\DBAL\Types\Type::INTEGER);
-        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm)->setParameter(1, $userId);
 
         return $query->getResult();
     }
