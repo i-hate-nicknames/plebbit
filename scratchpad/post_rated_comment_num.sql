@@ -1,4 +1,5 @@
 SELECT rated.id, rated.title, rated.rating, rated.current_vote, u.name,
+       rated.created_at, rated.updated_at, rated.author_id, u.name, u.email,
        -- calculate the number of comments for every post
        sum(CASE
                WHEN c.id IS NULL THEN 0
@@ -6,7 +7,7 @@ SELECT rated.id, rated.title, rated.rating, rated.current_vote, u.name,
            END)
            AS comment_count
 FROM (
-         SELECT p.id, p.title, p.author_id,
+         SELECT p.id, p.title, p.author_id, p.created_at, p.updated_at,
                 -- sum all the ratings, the posts that do not have a rating
                 -- will get 0 due to the following CASE
                 sum(CASE
@@ -22,8 +23,11 @@ FROM (
                   LEFT JOIN post_vote pv ON p.id = pv.post_id
               -- filter only a single post
               -- WHERE p.id = 1
-         GROUP BY p.id, p.title, p.author_id
+              -- filter by district
+              -- WHERE p.district_id = :id
+         GROUP BY p.id, p.title, p.author_id, p.created_at, p.updated_at
      ) rated
          LEFT JOIN `comment` c ON rated.id = c.post_id
          JOIN user u on rated.author_id = u.id
-GROUP BY rated.id, rated.title, rated.rating, rated.current_vote, u.name
+GROUP BY rated.id, rated.title, rated.rating, rated.current_vote, u.name,
+         rated.created_at, rated.updated_at, u.name, u.email
