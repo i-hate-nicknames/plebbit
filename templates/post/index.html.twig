@@ -4,10 +4,19 @@
 
 {% block body %}
 <div class="posts">
-    {% for post in posts %}
+    {% for postData in data %}
+    {% set post = postData['post'] %}
     <div class="post">
         <div class="title"><a href="{{ url('post', {'id': post.id}) }}">{{ post.title }}</a> by <a href="{{ url('user', {id: post.author.id}) }}">{{ post.author.name }}</a></div>
-        <div class="text">{{ post.text }}</div>
+        <div class="rating">{{ postData['rating'] }}</div>
+        <div class="current-vote">{{ postData['currentVote'] }}</div>
+        <div class="comment-count">
+            {% if postData['commentCount'] != 0 %}
+                {{ postData['commentCount'] }} comments
+            {% else %}
+                No comments yet
+            {% endif %}
+        </div>
         <hr>
         <br>
     </div>
