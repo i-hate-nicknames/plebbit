@@ -164,10 +164,10 @@ class PostController extends AbstractController
         }
         if ($existingVote !== null) {
             $manager->remove($existingVote);
+            $manager->flush();
             if ($value === $existingVote->getValue()) {
                 return new JsonResponse([], 204);
             }
-            $manager->flush();
         }
         $vote = new PostVote();
         $vote->setPost($post)
