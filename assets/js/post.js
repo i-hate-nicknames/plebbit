@@ -8,13 +8,47 @@ let deleteEntity = (url) => {
         .catch(err =>  console.log(err));
 };
 
-let makeVoteCallback = function (voteUrl, voteValue) {
+let makeVoteCallback = function (voteUrl, voteValue, ratingBox) {
     return event => {
         event.preventDefault();
-        axios.post(voteUrl, {'value': parseInt(voteValue)})
+        let voteState = parseInt(ratingBox.getAttribute("data-current-vote"));
+        let ratingDiff;
+        if (voteState === voteValue) {
+            ratingDiff = -voteValue;
+        } else {
+            ratingDiff = voteValue - voteState;
+        }
+        let nextVoteState = voteState + ratingDiff;
+        // update html without waiting for response
+        updateRating(ratingBox, ratingDiff, nextVoteState);
+        axios.post(voteUrl, {'value': voteValue})
             .then(_ => console.log('voted'))
-            .catch(err => console.log(err.response.data.error));
+            .catch(err => {
+                console.log(err.response.data.error);
+                // roll back update done to html elements
+                updateRating(ratingBox, -ratingDiff, voteState);
+            });
     };
+};
+
+// update frontend side of the rating: the number and the
+// state of vote buttons
+let updateRating = function (ratingBox, ratingDiff, nextVoteState) {
+    // update numeric value with diff
+    let ratingNumberElement = ratingBox.querySelector('.rating-value');
+    let rating = parseInt(ratingNumberElement.textContent);
+    ratingNumberElement.textContent = rating + ratingDiff;
+    ratingBox.setAttribute("data-current-vote", nextVoteState);
+    let downvote = ratingBox.querySelector(".downvote a");
+    let upvote = ratingBox.querySelector(".upvote a");
+    // update active state of buttons
+    upvote.removeAttribute("class");
+    downvote.removeAttribute("class");
+    if (nextVoteState > 0) {
+        upvote.setAttribute("class", "active");
+    } else {
+        downvote.setAttribute("class", "active");
+    }
 };
 
 let submitComment = function (event) {
@@ -67,12 +101,14 @@ let postPage = () => {
     }
 
     // init votes
-    let voteBoxes = Array.from(document.getElementsByClassName('vote'));
-    voteBoxes.forEach(box => {
-        let link = box.querySelector('a');
-        let voteValue = link.getAttribute("data-vote-value");
-        let voteUrl = link.getAttribute("data-vote-url");
-        link.addEventListener("click", makeVoteCallback(voteUrl, voteValue));
+    let ratingBoxes = Array.from(document.getElementsByClassName('rating'));
+    ratingBoxes.forEach(box => {
+        let voteUrl = box.getAttribute("data-vote-url");
+        let links = Array.from(box.querySelectorAll('a'));
+        links.forEach(link => {
+            let voteValue = parseInt(link.getAttribute("data-vote-value"));
+            link.addEventListener("click", makeVoteCallback(voteUrl, voteValue, box));
+        });
     });
 };
 

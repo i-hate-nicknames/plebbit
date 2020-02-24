@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use function count;
 use function json_decode;
+use function sleep;
 use function sprintf;
 use function var_export;
 
