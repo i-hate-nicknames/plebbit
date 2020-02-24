@@ -38,10 +38,7 @@ let submitComment = function (event) {
 };
 
 let postPage = () => {
-    let postDataBox = document.getElementById('post-data');
-    let postId = postDataBox.getAttribute('data-post-id');
-    let voteUrl = postDataBox.getAttribute('data-vote-url');
-
+    let x = 5;
     // init delete
     let removeBtn = document.getElementById('btn-remove');
     if (null !== removeBtn) {
@@ -54,26 +51,29 @@ let postPage = () => {
 
     // init comment form
     let commentFormBox = document.getElementById("comment-form");
-    let replyLinks = Array.from(document.getElementsByClassName("reply-form"));
-    let commentForm = commentFormBox.querySelector('form');
-    replyLinks.forEach(link => {
-        link.addEventListener("click", event => {
-            event.preventDefault();
-            let commentId = link.getAttribute("data-comment-id");
-            let placeholder = document.getElementById("form-container-" + commentId);
-            commentFormBox.setAttribute("data-parent-comment", commentId);
-            placeholder.appendChild(commentFormBox);
+    if (null !== commentFormBox) {
+        let replyLinks = Array.from(document.getElementsByClassName("reply-form"));
+        let commentForm = commentFormBox.querySelector('form');
+        replyLinks.forEach(link => {
+            link.addEventListener("click", event => {
+                event.preventDefault();
+                let commentId = link.getAttribute("data-comment-id");
+                let placeholder = document.getElementById("form-container-" + commentId);
+                commentFormBox.setAttribute("data-parent-comment", commentId);
+                placeholder.appendChild(commentFormBox);
+            });
         });
-    });
-    commentForm.addEventListener('submit', submitComment);
+        commentForm.addEventListener('submit', submitComment);
+    }
 
-    //init votes
+    // init votes
     let voteBoxes = Array.from(document.getElementsByClassName('vote'));
     voteBoxes.forEach(box => {
         let link = box.querySelector('a');
         let voteValue = link.getAttribute("data-vote-value");
+        let voteUrl = link.getAttribute("data-vote-url");
         link.addEventListener("click", makeVoteCallback(voteUrl, voteValue));
-    })
+    });
 };
 
 export default postPage;
