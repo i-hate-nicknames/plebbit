@@ -30,4 +30,4 @@ FROM (
          LEFT JOIN `comment` c ON rated.id = c.post_id
          JOIN user u on rated.author_id = u.id
 GROUP BY rated.id, rated.title, rated.rating, rated.current_vote, u.name,
-         rated.created_at, rated.updated_at, u.name, u.email
+         rated.created_at, rated.updated_at, u.id, u.name, u.email
