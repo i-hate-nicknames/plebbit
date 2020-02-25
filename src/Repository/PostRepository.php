@@ -67,7 +67,8 @@ class PostRepository extends ServiceEntityRepository
     {
         /** @var PostQueryBuilder $queryBuilder */
         $queryBuilder = $this->qbFactory->makePostQueryBuilder();
-        $queryBuilder->setDistrictId(1)
+        $queryBuilder
+            ->setPostId(3)
             ->setCurrentUserId(($user) ? $user->getId() : 0);
         $sql = $queryBuilder->build();
         $rsm = new ResultSetMapping();
