@@ -16,7 +16,8 @@ class PostQueryBuilder
 {
     private const QUERY = <<<SQL
         SELECT rated.id, rated.title, rated.rating, rated.current_vote, u.name,
-       rated.created_at, rated.updated_at, rated.author_id, u.name, u.email, rated.district_id,
+       rated.created_at, rated.updated_at, rated.author_id, u.name, u.email,
+       rated.district_id, rated.district_name,
        -- calculate the number of comments for every post
        sum(CASE
                WHEN c.id IS NULL THEN 0
@@ -25,6 +26,7 @@ class PostQueryBuilder
            AS comment_count
 FROM (
          SELECT p.id, p.title, p.author_id, p.created_at, p.updated_at, p.district_id,
+                d.name AS district_name,
                 -- sum all the ratings, the posts that do not have a rating
                 -- will get 0 due to the following CASE
                 sum(CASE
@@ -37,16 +39,15 @@ FROM (
                         ELSE 0
                     END) AS current_vote
          FROM post p
-                  LEFT JOIN post_vote pv ON p.id = pv.post_id
-              -- filter only a single post
-              -- WHERE p.id = 1
-              
-         GROUP BY p.id, p.title, p.author_id, p.created_at, p.updated_at, p.district_id
+         LEFT JOIN post_vote pv ON p.id = pv.post_id
+         JOIN district d on p.district_id = d.id
+         GROUP BY p.id, p.title, p.author_id, p.created_at, p.updated_at, p.district_id, district_name
      ) rated
          LEFT JOIN `comment` c ON rated.id = c.post_id
          JOIN user u on rated.author_id = u.id
 GROUP BY rated.id, rated.title, rated.rating, rated.current_vote, u.name,
-         rated.created_at, rated.updated_at, u.id, u.name, u.email, rated.district_id
+         rated.created_at, rated.updated_at, u.id, u.name, u.email,
+         rated.district_id, rated.district_name
 SQL;
 
     private $currentUserId = 0;

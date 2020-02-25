@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\District;
 use App\Entity\Post;
 use App\Entity\User;
 use App\Factory\PostQueryBuilderFactory;
@@ -70,16 +71,19 @@ class PostRepository extends ServiceEntityRepository
             ->setCurrentUserId(($user) ? $user->getId() : 0);
         $sql = $queryBuilder->build();
         $rsm = new ResultSetMapping();
-        // todo: add joined result of author?
         $rsm->addEntityResult(Post::class, 'p', 'post')
             ->addFieldResult('p', 'id', 'id')
             ->addFieldResult('p', 'title', 'title')
+
             ->addFieldResult('p', 'created_at', 'createdAt')
             ->addFieldResult('p', 'updated_at', 'updatedAt')
             ->addJoinedEntityResult(User::class, 'a', 'p', 'author')
             ->addFieldResult('a', 'author_id', 'id')
             ->addFieldResult('a', 'name', 'name')
             ->addFieldResult('a', 'email', 'email')
+            ->addJoinedEntityResult(District::class, 'd', 'p', 'district')
+            ->addFieldResult('d', 'district_id', 'id')
+            ->addFieldResult('d', 'district_name', 'name')
             ->addScalarResult('rating', 'rating', \Doctrine\DBAL\Types\Type::INTEGER)
             ->addScalarResult('comment_count', 'commentCount', \Doctrine\DBAL\Types\Type::INTEGER)
             ->addScalarResult('current_vote', 'currentVote', \Doctrine\DBAL\Types\Type::INTEGER);
