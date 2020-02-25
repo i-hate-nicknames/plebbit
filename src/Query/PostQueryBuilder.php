@@ -3,6 +3,7 @@
 namespace App\Query;
 
 use Symfony\Component\Intl\Exception\NotImplementedException;
+use function join;
 
 /**
  * Class PostQueryBuilder allows building an SQL query for fetching post(s)
@@ -55,6 +56,8 @@ SQL;
 
     private $districtId;
 
+    private $postId;
+
     /**
      * @param $currentUserId
      * @return $this
@@ -75,16 +78,32 @@ SQL;
         return $this;
     }
 
+    /**
+     * @param mixed $postId
+     * @return PostQueryBuilder
+     */
+    public function setPostId($postId): self
+    {
+        $this->postId = $postId;
+        return $this;
+    }
+
     public function build(): string
     {
         $result = self::QUERY;
         $result = $this->replacePlaceholder($result, 'USER_ID', $this->currentUserId);
+        $conditions = [];
+        $innerWhere = '';
         if ($this->districtId !== null) {
-            $innerWhere = 'WHERE ';
-            $districtId = 'p.district_id = ' . $this->districtId;
-            $innerWhere .= $districtId;
-            $result = $this->replacePlaceholder($result, 'INNER_WHERE', $innerWhere);
+            $conditions[] = 'p.district_id = ' . $this->districtId;
         }
+        if ($this->postId !== null) {
+            $conditions[] = 'p.id = ' . $this->postId;
+        }
+        if (!empty($conditions)) {
+            $innerWhere = 'WHERE ' . join(' AND ', $conditions);
+        }
+        $result = $this->replacePlaceholder($result, 'INNER_WHERE', $innerWhere);
         return $result;
     }
 
