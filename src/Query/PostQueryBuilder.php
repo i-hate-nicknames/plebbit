@@ -14,11 +14,44 @@ use Symfony\Component\Intl\Exception\NotImplementedException;
  */
 class PostQueryBuilder
 {
+    private const QUERY = <<<SQL
+        SELECT rated.id, rated.title, rated.rating, rated.current_vote, u.name,
+       rated.created_at, rated.updated_at, rated.author_id, u.name, u.email,
+       -- calculate the number of comments for every post
+       sum(CASE
+               WHEN c.id IS NULL THEN 0
+               ELSE 1
+           END)
+           AS comment_count
+FROM (
+         SELECT p.id, p.title, p.author_id, p.created_at, p.updated_at,
+                -- sum all the ratings, the posts that do not have a rating
+                -- will get 0 due to the following CASE
+                sum(CASE
+                        WHEN pv.value IS NULL THEN 0
+                        ELSE pv.value
+                    END) AS rating,
+                -- calculate the voting status for current user
+                sum(CASE
+                        WHEN pv.user_id = {USER_ID} THEN pv.value
+                        ELSE 0
+                    END) AS current_vote
+         FROM post p
+                  LEFT JOIN post_vote pv ON p.id = pv.post_id
+              -- filter only a single post
+              -- WHERE p.id = 1
+              {INNER_WHERE}
+         GROUP BY p.id, p.title, p.author_id, p.created_at, p.updated_at
+     ) rated
+         LEFT JOIN `comment` c ON rated.id = c.post_id
+         JOIN user u on rated.author_id = u.id
+GROUP BY rated.id, rated.title, rated.rating, rated.current_vote, u.name,
+         rated.created_at, rated.updated_at, u.id, u.name, u.email
+SQL;
 
+    private $currentUserId = 0;
 
-    private $currentUserId;
-
-    private $districtIds;
+    private $districtId;
 
     /**
      * @param $currentUserId
@@ -27,19 +60,40 @@ class PostQueryBuilder
     public function setCurrentUserId($currentUserId): self
     {
         $this->currentUserId = $currentUserId;
+        return $this;
     }
 
     /**
-     * @param $districtIds
+     * @param $districtId
      * @return $this
      */
-    public function setDistrictIds($districtIds): self
+    public function setDistrictIds(int $districtId): self
     {
-        $this->districtIds = $districtIds;
+        $this->districtId = $districtId;
+        return $this;
     }
 
     public function build(): string
     {
-        throw new NotImplementedException('sorry');
+        $result = self::QUERY;
+        $result = $this->replacePlaceholder($result, 'USER_ID', $this->currentUserId);
+        if ($this->districtId !== null) {
+            $innerWhere = 'WHERE ';
+            $districtId = 'p.disctrictId = ' . $this->districtId;
+            $result = $this->replacePlaceholder($result, 'INNER_WHERE', $innerWhere);
+        }
+        return $result;
+    }
+
+    /**
+     * Replace placeholder in string $sql in form {placeholder_name} with $value
+     * @param string $sql
+     * @param string $placeholderName
+     * @param string $value
+     * @return string
+     */
+    private function replacePlaceholder(string $sql, string $placeholderName, string $value): string
+    {
+        return str_replace('{' . $placeholderName . '}', $value, $sql);
     }
 }
