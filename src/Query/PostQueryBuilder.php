@@ -41,6 +41,7 @@ FROM (
          FROM post p
          LEFT JOIN post_vote pv ON p.id = pv.post_id
          JOIN district d on p.district_id = d.id
+         {INNER_WHERE}
          GROUP BY p.id, p.title, p.author_id, p.created_at, p.updated_at, p.district_id, district_name
      ) rated
          LEFT JOIN `comment` c ON rated.id = c.post_id
@@ -80,7 +81,7 @@ SQL;
         $result = $this->replacePlaceholder($result, 'USER_ID', $this->currentUserId);
         if ($this->districtId !== null) {
             $innerWhere = 'WHERE ';
-            $districtId = 'p.disctrict_id = ' . $this->districtId;
+            $districtId = 'p.district_id = ' . $this->districtId;
             $innerWhere .= $districtId;
             $result = $this->replacePlaceholder($result, 'INNER_WHERE', $innerWhere);
         }
