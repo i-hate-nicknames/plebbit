@@ -16,7 +16,7 @@ class PostQueryBuilder
 {
     private const QUERY = <<<SQL
         SELECT rated.id, rated.title, rated.rating, rated.current_vote, u.name,
-       rated.created_at, rated.updated_at, rated.author_id, u.name, u.email,
+       rated.created_at, rated.updated_at, rated.author_id, u.name, u.email, rated.district_id,
        -- calculate the number of comments for every post
        sum(CASE
                WHEN c.id IS NULL THEN 0
@@ -24,7 +24,7 @@ class PostQueryBuilder
            END)
            AS comment_count
 FROM (
-         SELECT p.id, p.title, p.author_id, p.created_at, p.updated_at,
+         SELECT p.id, p.title, p.author_id, p.created_at, p.updated_at, p.district_id,
                 -- sum all the ratings, the posts that do not have a rating
                 -- will get 0 due to the following CASE
                 sum(CASE
@@ -40,13 +40,13 @@ FROM (
                   LEFT JOIN post_vote pv ON p.id = pv.post_id
               -- filter only a single post
               -- WHERE p.id = 1
-              {INNER_WHERE}
-         GROUP BY p.id, p.title, p.author_id, p.created_at, p.updated_at
+              
+         GROUP BY p.id, p.title, p.author_id, p.created_at, p.updated_at, p.district_id
      ) rated
          LEFT JOIN `comment` c ON rated.id = c.post_id
          JOIN user u on rated.author_id = u.id
 GROUP BY rated.id, rated.title, rated.rating, rated.current_vote, u.name,
-         rated.created_at, rated.updated_at, u.id, u.name, u.email
+         rated.created_at, rated.updated_at, u.id, u.name, u.email, rated.district_id
 SQL;
 
     private $currentUserId = 0;
@@ -67,7 +67,7 @@ SQL;
      * @param $districtId
      * @return $this
      */
-    public function setDistrictIds(int $districtId): self
+    public function setDistrictId(int $districtId): self
     {
         $this->districtId = $districtId;
         return $this;
@@ -79,7 +79,8 @@ SQL;
         $result = $this->replacePlaceholder($result, 'USER_ID', $this->currentUserId);
         if ($this->districtId !== null) {
             $innerWhere = 'WHERE ';
-            $districtId = 'p.disctrictId = ' . $this->districtId;
+            $districtId = 'p.disctrict_id = ' . $this->districtId;
+            $innerWhere .= $districtId;
             $result = $this->replacePlaceholder($result, 'INNER_WHERE', $innerWhere);
         }
         return $result;
