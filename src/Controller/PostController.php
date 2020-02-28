@@ -37,22 +37,9 @@ class PostController extends AbstractController
     {
         return new RedirectResponse($this->generateUrl('posts'));
     }
-    /**
-     * @Route("/posts", name="posts")
-     */
-    public function posts(Request $request)
-    {
-        // todo: delete this. Posts should be accessed through districts or
-        // from homepage which combines posts from all subscriptions
-        $doctrine = $this->getDoctrine();
-        $repository = $doctrine->getRepository(Post::class);
-        $postsWithStats = $repository->getPostsListing($this->getUser());
-        return $this->render('post/index.html.twig', [
-            'data' => $postsWithStats
-        ]);
-    }
 
-    // todo: add submit post method
+    // todo: add homepage: top posts from all subs for unauthenticated users
+    // top posts from subscribed districts for authenticated
 
     /**
      * @Route("/post/{id}", name="post", methods={"GET"})
