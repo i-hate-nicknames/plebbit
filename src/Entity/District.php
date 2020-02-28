@@ -50,9 +50,15 @@ class District implements OwnedResource
      */
     private $owner;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Subscription", mappedBy="district")
+     */
+    private $subscriptions;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
+        $this->subscriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -123,6 +129,37 @@ class District implements OwnedResource
     public function setOwner(User $owner): self
     {
         $this->owner = $owner;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Subscription[]
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscription $subscription): self
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions[] = $subscription;
+            $subscription->setDistrict($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): self
+    {
+        if ($this->subscriptions->contains($subscription)) {
+            $this->subscriptions->removeElement($subscription);
+            // set the owning side to null (unless already changed)
+            if ($subscription->getDistrict() === $this) {
+                $subscription->setDistrict(null);
+            }
+        }
 
         return $this;
     }
