@@ -20,8 +20,9 @@ class DistrictController extends AbstractController
     public function index()
     {
         $repository = $this->getDoctrine()->getRepository(District::class);
+        $districtsData = $repository->findAllWithSubscribeStatus($this->getUser());
         return $this->render('district/list.html.twig', [
-            'districts' => $repository->findAll(),
+            'districtsData' => $districtsData
         ]);
     }
 
@@ -70,6 +71,7 @@ class DistrictController extends AbstractController
      */
     public function createDistrict(Request $request)
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         /** @var User $user */
         $user = $this->getUser();
         $district = new District();
@@ -87,4 +89,19 @@ class DistrictController extends AbstractController
             'form' => $form->createView()
         ]);
     }
+
+    public function subscribe(District $district)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $user = $this->getUser();
+        // create subscription and save
+    }
+
+    public function unsubscribe(District $district)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $user = $this->getUser();
+        // delete subscription
+    }
+
 }
