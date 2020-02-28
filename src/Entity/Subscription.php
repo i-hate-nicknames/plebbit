@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\SubscriptionRepository")
+ * @ORM\Table(name="subscription",uniqueConstraints={
+ *     @ORM\UniqueConstraint(name="sub_user_district", columns={"district_id", "user_id"})})
  */
 class Subscription
 {
