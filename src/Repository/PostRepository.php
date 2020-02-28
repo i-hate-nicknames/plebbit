@@ -35,13 +35,15 @@ class PostRepository extends ServiceEntityRepository
         $this->qbFactory = $qbFactory;
     }
 
-    public function getPostsListing(?User $user)
+    public function getPostsListing(?User $user, $districts = null)
     {
         /** @var PostQueryBuilder $queryBuilder */
         $queryBuilder = $this->qbFactory->makePostQueryBuilder();
         $queryBuilder
-            ->setPostId(3)
             ->setCurrentUserId(($user) ? $user->getId() : 0);
+        if ($districts != null) {
+            $queryBuilder->setDistricts($districts);
+        }
         $sql = $queryBuilder->build();
         $rsm = $this->getPostListResultSetMapping();
         $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);

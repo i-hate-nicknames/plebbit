@@ -54,7 +54,8 @@ SQL;
 
     private $currentUserId = 0;
 
-    private $districtId;
+    /** @var array */
+    private $districts;
 
     private $postId;
 
@@ -69,12 +70,12 @@ SQL;
     }
 
     /**
-     * @param $districtId
+     * @param $districts
      * @return $this
      */
-    public function setDistrictId(int $districtId): self
+    public function setDistricts(array $districts): self
     {
-        $this->districtId = $districtId;
+        $this->districts = $districts;
         return $this;
     }
 
@@ -94,8 +95,8 @@ SQL;
         $result = $this->replacePlaceholder($result, 'USER_ID', $this->currentUserId);
         $conditions = [];
         $innerWhere = '';
-        if ($this->districtId !== null) {
-            $conditions[] = 'p.district_id = ' . $this->districtId;
+        if ($this->districts !== null) {
+            $conditions[] = 'p.district_id IN ( ' . join(',', $this->districts) . ')';
         }
         if ($this->postId !== null) {
             $conditions[] = 'p.id = ' . $this->postId;
