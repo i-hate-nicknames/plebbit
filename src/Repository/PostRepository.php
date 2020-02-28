@@ -9,6 +9,7 @@ use App\Factory\PostQueryBuilderFactory;
 use App\Query\PostQueryBuilder;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\ResultSetMapping;
 
 /**
@@ -34,35 +35,6 @@ class PostRepository extends ServiceEntityRepository
         $this->qbFactory = $qbFactory;
     }
 
-    // /**
-    //  * @return Post[] Returns an array of Post objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Post
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
-
     public function getPostsListing(?User $user)
     {
         /** @var PostQueryBuilder $queryBuilder */
@@ -71,6 +43,36 @@ class PostRepository extends ServiceEntityRepository
             ->setPostId(3)
             ->setCurrentUserId(($user) ? $user->getId() : 0);
         $sql = $queryBuilder->build();
+        $rsm = $this->getPostListResultSetMapping();
+        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+
+        return $query->getResult();
+    }
+
+    public function getSinglePost(?User $user, int $postId)
+    {
+        /** @var PostQueryBuilder $queryBuilder */
+        $queryBuilder = $this->qbFactory->makePostQueryBuilder();
+        $queryBuilder
+            ->setPostId($postId)
+            ->setCurrentUserId(($user) ? $user->getId() : 0);
+        $sql = $queryBuilder->build();
+        $rsm = $this->getPostListResultSetMapping();
+        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+        try {
+            return $query->getSingleResult();
+        } catch (NoResultException $ex) {
+            return [];
+        }
+    }
+
+    /**
+     * Get result set mapping for basic native query returned by PostQueryBuilder
+     * If more fields are added to the query, they have to be added to result set mapping as well
+     * @return ResultSetMapping
+     */
+    private function getPostListResultSetMapping(): ResultSetMapping
+    {
         $rsm = new ResultSetMapping();
         $rsm->addEntityResult(Post::class, 'p', 'post')
             ->addFieldResult('p', 'id', 'id')
@@ -88,8 +90,6 @@ class PostRepository extends ServiceEntityRepository
             ->addScalarResult('rating', 'rating', \Doctrine\DBAL\Types\Type::INTEGER)
             ->addScalarResult('comment_count', 'commentCount', \Doctrine\DBAL\Types\Type::INTEGER)
             ->addScalarResult('current_vote', 'currentVote', \Doctrine\DBAL\Types\Type::INTEGER);
-        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
-
-        return $query->getResult();
+        return $rsm;
     }
 }

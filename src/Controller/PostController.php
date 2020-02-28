@@ -57,13 +57,17 @@ class PostController extends AbstractController
 
     /**
      * @Route("/post/{id}", name="post", methods={"GET"})
+     * @param Request $request
+     * @param int $id
      * @return Response
      */
-    public function post(Request $request, Post $post)
+    public function post(Request $request, int $id)
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $repository = $this->getDoctrine()->getRepository(Comment::class);
-        $commentTree = $repository->fetchTree($post->getId());
+        $postRepository = $this->getDoctrine()->getRepository(Post::class);
+        $postData = $postRepository->getSinglePost($this->getUser(), $id);
+        $post = $postData['post'];
+        $commentRepository = $this->getDoctrine()->getRepository(Comment::class);
+        $commentTree = $commentRepository->fetchTree($post->getId());
         $post->setComments($commentTree);
         /** @var User $user */
         $user = $this->getUser();
@@ -71,6 +75,7 @@ class PostController extends AbstractController
         $comment->setAuthor($user);
         $form = $this->createForm(CommentType::class, $comment);
         return $this->render('post/post.html.twig', [
+            'postData' => $postData,
             'post' => $post,
             'comment_form' => $form->createView()
         ]);
