@@ -3,9 +3,15 @@
 {% block title %}Hello DistrictController!{% endblock %}
 
 {% block body %}
-{% for district in districts %}
+
+{% for districtData in districtsData %}
+    {% set district = districtData.district %}
     <div class="district">
-        <div class="name"><a href="{{ url('district', {name: district.name}) }}">{{ district.name }}</a></div>
+        <div class="name">
+            <a href="{{ url('district', {name: district.name}) }}">{{ district.name }}</a>
+        </div>
+        <div class="is-subscribed">{{ districtData.isSubscribed }}</div>
+        <div class="subscribers-number">{{ districtData.numSubscribers }}</div>
     </div>
 {% endfor %}
 {% endblock %}

@@ -57,6 +57,7 @@ class CommentRepository extends ServiceEntityRepository
             ->select('c,u')
             ->andWhere('c.post = :post_id')
             ->setParameter('post_id', $postId)
+            // todo: why left though? Comments always have authors, right?
             ->leftJoin('c.author', 'u')
             ->getQuery()
             ->getResult();
