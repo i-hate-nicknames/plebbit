@@ -21,10 +21,6 @@ use Doctrine\ORM\Query\ResultSetMapping;
 class PostRepository extends ServiceEntityRepository
 {
     /**
-     * @var PostQueryBuilder
-     */
-    private $postQueryBuilder;
-    /**
      * @var PostQueryBuilderFactory
      */
     private $qbFactory;
