@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Comment;
 use App\Entity\District;
+use App\Entity\Post;
 use App\Entity\User;
 use App\Forms\CommentType;
 use App\Forms\CreateDistrictType;
@@ -31,13 +32,17 @@ class DistrictController extends AbstractController
      */
     public function posts(string $name)
     {
-        $repository = $this->getDoctrine()->getRepository(District::class);
-        $district = $repository->getByName($name);
+        $districtRepository = $this->getDoctrine()->getRepository(District::class);
+        $district = $districtRepository->getByName($name);
         if (null === $district) {
             return $this->createNotFoundException('District not found my friend');
         }
+        $doctrine = $this->getDoctrine();
+        $postRepository = $doctrine->getRepository(Post::class);
+        $postsWithStats = $postRepository->getPostsListing($this->getUser(), [$district->getId()]);
         return $this->render('district/posts.html.twig', [
             'district' => $district,
+            'data' => $postsWithStats
         ]);
     }
 

@@ -4,8 +4,51 @@ import qs from 'qs';
 let deleteEntity = (url) => {
 
     axios.delete(url)
-        .then((response) => { window.location = '/posts' })
-        .catch((err) => { console.log(err) });
+        .then(response => window.location = '/posts')
+        .catch(err =>  console.log(err));
+};
+
+let makeVoteCallback = function (voteUrl, voteValue, ratingBox) {
+    return event => {
+        event.preventDefault();
+        let voteState = parseInt(ratingBox.getAttribute("data-current-vote"));
+        let ratingDiff;
+        if (voteState === voteValue) {
+            ratingDiff = -voteValue;
+        } else {
+            ratingDiff = voteValue - voteState;
+        }
+        let nextVoteState = voteState + ratingDiff;
+        // update html without waiting for response
+        updateRating(ratingBox, ratingDiff, nextVoteState);
+        axios.post(voteUrl, {'value': voteValue})
+            .then(_ => console.log('voted'))
+            .catch(err => {
+                console.log(err.response.data.error);
+                // roll back update done to html elements
+                updateRating(ratingBox, -ratingDiff, voteState);
+            });
+    };
+};
+
+// update frontend side of the rating: the number and the
+// state of vote buttons
+let updateRating = function (ratingBox, ratingDiff, nextVoteState) {
+    // update numeric value with diff
+    let ratingNumberElement = ratingBox.querySelector('.rating-value');
+    let rating = parseInt(ratingNumberElement.textContent);
+    ratingNumberElement.textContent = rating + ratingDiff;
+    ratingBox.setAttribute("data-current-vote", nextVoteState);
+    let downvote = ratingBox.querySelector(".downvote a");
+    let upvote = ratingBox.querySelector(".upvote a");
+    // update active state of buttons
+    upvote.removeAttribute("class");
+    downvote.removeAttribute("class");
+    if (nextVoteState > 0) {
+        upvote.setAttribute("class", "active");
+    } else {
+        downvote.setAttribute("class", "active");
+    }
 };
 
 let submitComment = function (event) {
@@ -29,29 +72,44 @@ let submitComment = function (event) {
 };
 
 let postPage = () => {
+    let x = 5;
     // init delete
-    // todo: fix for posts that you do not own
     let removeBtn = document.getElementById('btn-remove');
-    let deletePostUrl = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
+    if (null !== removeBtn) {
+        let deletePostUrl = removeBtn.attributes.getNamedItem("data-delete-url").nodeValue;
 
-    removeBtn.onclick = () => {
-        deleteEntity(deletePostUrl)
-    };
+        removeBtn.onclick = () => {
+            deleteEntity(deletePostUrl)
+        };
+    }
 
     // init comment form
     let commentFormBox = document.getElementById("comment-form");
-    let replyLinks = Array.from(document.getElementsByClassName("reply-form"));
-    let commentForm = commentFormBox.querySelector('form');
-    replyLinks.forEach(link => {
-        link.addEventListener("click", event => {
-            event.preventDefault();
-            let commentId = link.getAttribute("data-comment-id");
-            let placeholder = document.getElementById("form-container-" + commentId);
-            commentFormBox.setAttribute("data-parent-comment", commentId);
-            placeholder.appendChild(commentFormBox);
+    if (null !== commentFormBox) {
+        let replyLinks = Array.from(document.getElementsByClassName("reply-form"));
+        let commentForm = commentFormBox.querySelector('form');
+        replyLinks.forEach(link => {
+            link.addEventListener("click", event => {
+                event.preventDefault();
+                let commentId = link.getAttribute("data-comment-id");
+                let placeholder = document.getElementById("form-container-" + commentId);
+                commentFormBox.setAttribute("data-parent-comment", commentId);
+                placeholder.appendChild(commentFormBox);
+            });
+        });
+        commentForm.addEventListener('submit', submitComment);
+    }
+
+    // init votes
+    let ratingBoxes = Array.from(document.getElementsByClassName('rating'));
+    ratingBoxes.forEach(box => {
+        let voteUrl = box.getAttribute("data-vote-url");
+        let links = Array.from(box.querySelectorAll('a'));
+        links.forEach(link => {
+            let voteValue = parseInt(link.getAttribute("data-vote-value"));
+            link.addEventListener("click", makeVoteCallback(voteUrl, voteValue, box));
         });
     });
-    commentForm.addEventListener('submit', submitComment);
 };
 
 export default postPage;

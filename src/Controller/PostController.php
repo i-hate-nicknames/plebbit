@@ -5,16 +5,25 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Entity\District;
 use App\Entity\Post;
+use App\Entity\PostVote;
 use App\Entity\User;
 use App\Forms\CommentType;
 use App\Forms\PostType;
+use DateTime;
+use DateTimeZone;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use function count;
+use function json_decode;
+use function sleep;
+use function sprintf;
 use function var_export;
 
 class PostController extends AbstractController
@@ -26,7 +35,7 @@ class PostController extends AbstractController
      */
     public function home()
     {
-        return new Response('feels like home :DDDDDDD');
+        return new RedirectResponse($this->generateUrl('posts'));
     }
     /**
      * @Route("/posts", name="posts")
@@ -36,9 +45,10 @@ class PostController extends AbstractController
         // todo: delete this. Posts should be accessed through districts or
         // from homepage which combines posts from all subscriptions
         $doctrine = $this->getDoctrine();
-        $repo = $doctrine->getRepository(Post::class);
+        $repository = $doctrine->getRepository(Post::class);
+        $postsWithStats = $repository->getPostsListing($this->getUser());
         return $this->render('post/index.html.twig', [
-            'posts' => $repo->findAll()
+            'data' => $postsWithStats
         ]);
     }
 
@@ -46,13 +56,17 @@ class PostController extends AbstractController
 
     /**
      * @Route("/post/{id}", name="post", methods={"GET"})
+     * @param Request $request
+     * @param int $id
      * @return Response
      */
-    public function post(Request $request, Post $post)
+    public function post(Request $request, int $id)
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $repository = $this->getDoctrine()->getRepository(Comment::class);
-        $commentTree = $repository->fetchTree($post->getId());
+        $postRepository = $this->getDoctrine()->getRepository(Post::class);
+        $postData = $postRepository->getSinglePost($this->getUser(), $id);
+        $post = $postData['post'];
+        $commentRepository = $this->getDoctrine()->getRepository(Comment::class);
+        $commentTree = $commentRepository->fetchTree($post->getId());
         $post->setComments($commentTree);
         /** @var User $user */
         $user = $this->getUser();
@@ -60,6 +74,7 @@ class PostController extends AbstractController
         $comment->setAuthor($user);
         $form = $this->createForm(CommentType::class, $comment);
         return $this->render('post/post.html.twig', [
+            'postData' => $postData,
             'post' => $post,
             'comment_form' => $form->createView()
         ]);
@@ -128,9 +143,52 @@ class PostController extends AbstractController
             throw $this->createNotFoundException('Post not found');
         }
         $this->denyAccessUnlessGranted('delete', $post, 'You are not allowed to delete this post!');
-//        $manager->remove($post);
-//        $manager->flush();
+        $manager->remove($post);
+        $manager->flush();
         return $this->redirectToRoute('posts');
+    }
+
+    // todo: implement via API platform
+    /**
+     * @Route("/post/{id}/votes", name="votePost", methods={"POST"})
+     */
+    public function vote(Post $post, Request $request)
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $manager = $this->getDoctrine()->getManager();
+        $repository = $manager->getRepository(PostVote::class);
+        /** @var User $user */
+        $user = $this->getUser();
+        $existingVote = $repository->findByUserAndPost($user, $post);
+        $content = json_decode($request->getContent(), true);
+        $value = $content['value'] ?? 0;
+        if ($value != 1 && $value != -1) {
+            return new JsonResponse([
+                'error' => sprintf('Invalid vote value: %d', $value)
+            ], 400);
+        }
+        if ($existingVote !== null) {
+            $manager->remove($existingVote);
+            $manager->flush();
+            if ($value === $existingVote->getValue()) {
+                return new JsonResponse([], 204);
+            }
+        }
+        $vote = new PostVote();
+        $vote->setPost($post)
+            ->setUser($this->getUser())
+            ->setValue($value)
+            ->setCreatedAt(new DateTime('now', new DateTimeZone('UTC')));
+
+        try {
+            $manager->persist($vote);
+            $manager->flush();
+        } catch (UniqueConstraintViolationException $exception) {
+            return new JsonResponse([
+                'error' => 'You can only vote once'
+            ], 400);
+        }
+        return new JsonResponse([], 204);
     }
 
     private function handlePostForm(Request $request, Post $post, FormInterface $form): ?RedirectResponse
