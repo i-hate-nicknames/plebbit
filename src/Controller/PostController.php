@@ -42,7 +42,6 @@ class PostController extends AbstractController
      */
     public function posts(Request $request)
     {
-
         // todo: delete this. Posts should be accessed through districts or
         // from homepage which combines posts from all subscriptions
         $doctrine = $this->getDoctrine();
