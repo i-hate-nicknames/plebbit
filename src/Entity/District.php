@@ -55,6 +55,11 @@ class District implements OwnedResource
      */
     private $subscriptions;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $numSubscribed;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -160,6 +165,18 @@ class District implements OwnedResource
                 $subscription->setDistrict(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getNumSubscribed(): ?int
+    {
+        return $this->numSubscribed;
+    }
+
+    public function setNumSubscribed(int $numSubscribed): self
+    {
+        $this->numSubscribed = $numSubscribed;
 
         return $this;
     }
