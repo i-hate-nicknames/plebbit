@@ -10,6 +10,15 @@
         <div class="name">
             <a href="{{ url('district', {name: district.name}) }}">{{ district.name }}</a>
         </div>
+        <div class="subscription">
+            <a href="#" class="subscribe-link" data-is-subscribed="{{ districtData.isSubscribed }}">
+                {% if districtData.isSubscribed %}
+                unsubscribe
+                {% else %}
+                subscribe
+                {% endif %}
+            </a>
+        </div>
         <div class="is-subscribed">{{ districtData.isSubscribed }}</div>
         <div class="subscribers-number">{{ districtData.numSubscribers }}</div>
     </div>
