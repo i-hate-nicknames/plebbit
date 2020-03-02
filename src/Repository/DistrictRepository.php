@@ -64,4 +64,16 @@ SQL;
         $query->setParameter(1, $userId);
         return $query->getResult();
     }
+
+    public function updateNumSubscribers(int $id, int $diff)
+    {
+        $q = $this->createQueryBuilder('d')
+            ->update()
+            ->set('d.numSubscribed', 'd.numSubscribed + :diff')
+            ->setParameter('diff', $diff)
+            ->where('d.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery();
+        $q->execute();
+    }
 }

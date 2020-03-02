@@ -5,10 +5,14 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Entity\District;
 use App\Entity\Post;
+use App\Entity\Subscription;
 use App\Entity\User;
 use App\Forms\CommentType;
 use App\Forms\CreateDistrictType;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -90,18 +94,64 @@ class DistrictController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/subscribe/{id}", name="districtSubscribe")
+     * @param District $district
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function subscribe(District $district)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $districtRepository = $entityManager->getRepository(District::class);
         $user = $this->getUser();
-        // create subscription and save
+        $subscription = new Subscription();
+        $subscription->setUser($user)
+            ->setDistrict($district);
+        $entityManager->beginTransaction();
+        try {
+            $districtRepository->updateNumSubscribers($district->getId(), 1);
+            $entityManager->persist($subscription);
+            $entityManager->flush();
+            $entityManager->commit();
+        } catch(UniqueConstraintViolationException $ex) {
+            $entityManager->rollback();
+            return new JsonResponse(['message' => 'already subscribed'], 404);
+        }
+        return new JsonResponse(['message' => 'success']);
     }
 
+    /**
+     * @Route("/unsubscribe/{id}", name="districtUnsubscribe")
+     * @param District $district
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function unsubscribe(District $district)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $districtRepository = $entityManager->getRepository(District::class);
+        $subscriptionRepository = $entityManager->getRepository(Subscription::class);
         $user = $this->getUser();
-        // delete subscription
+        $subscription = $subscriptionRepository->findByUserAndDistrict($user, $district);
+        if (!$subscription) {
+            return new JsonResponse(['message' => 'not subscribed'], 404);
+        }
+        $entityManager->beginTransaction();
+        try {
+            $districtRepository->updateNumSubscribers($district->getId(), -1);
+            $entityManager->remove($subscription);
+            $entityManager->flush();
+            $entityManager->commit();
+        } catch(UniqueConstraintViolationException $ex) {
+            $entityManager->rollback();
+            return new JsonResponse(['message' => 'not subscribed to begin with'], 404);
+        }
+        return new JsonResponse(['message' => 'success']);
     }
 
 }
