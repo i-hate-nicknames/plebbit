@@ -71,7 +71,7 @@ class User implements UserInterface
     private $postVotes;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Subscription", mappedBy="user")
+     * @ORM\OneToMany(targetEntity="App\Entity\Subscription", mappedBy="user", fetch="EAGER")
      */
     private $subscriptions;
 
@@ -327,5 +327,15 @@ class User implements UserInterface
         }
 
         return $this;
+    }
+
+    public function isSubscribed(District $district): bool
+    {
+        foreach ($this->subscriptions as $subscription) {
+            if ($subscription->getDistrict()->getId() === $district->getId()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

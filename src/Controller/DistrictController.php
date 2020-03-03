@@ -24,9 +24,9 @@ class DistrictController extends AbstractController
     public function index()
     {
         $repository = $this->getDoctrine()->getRepository(District::class);
-        $districtsData = $repository->findAllWithSubscribeStatus($this->getUser());
+        $districts = $repository->findAll();
         return $this->render('district/list.html.twig', [
-            'districtsData' => $districtsData
+            'districts' => $districts
         ]);
     }
 
