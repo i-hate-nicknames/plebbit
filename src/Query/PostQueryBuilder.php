@@ -28,12 +28,7 @@ class PostQueryBuilder
 FROM (
          SELECT p.id, p.title, p.author_id, p.created_at, p.updated_at, p.district_id,
                 d.name AS district_name,
-                -- sum all the ratings, the posts that do not have a rating
-                -- will get 0 due to the following CASE
-                sum(CASE
-                        WHEN pv.value IS NULL THEN 0
-                        ELSE pv.value
-                    END) AS rating,
+                (p.total_upvotes - p.total_downvotes) AS RATING,
                 -- calculate the voting status for current user
                 sum(CASE
                         WHEN pv.user_id = {USER_ID} THEN pv.value

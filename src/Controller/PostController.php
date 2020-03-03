@@ -156,13 +156,10 @@ class PostController extends AbstractController
             ], 400);
         }
         if ($existingVote !== null) {
-            if ($existingVote->getValue() === -1) {
-                $postRepository->decDownvotes($post->getId());
-            } else {
-                $postRepository->decUpvotes($post->getId());
-            }
+            $postRepository->updateVotes($post->getId(), $existingVote->getValue(), -1);
+            $manager->remove($existingVote);
+            $manager->flush();
             if ($value === $existingVote->getValue()) {
-                $manager->flush();
                 return new JsonResponse([], 204);
             }
         }
@@ -173,14 +170,11 @@ class PostController extends AbstractController
             ->setCreatedAt(new DateTime('now', new DateTimeZone('UTC')));
 
         try {
-            if ($vote->getValue() === 1) {
-                $postRepository->incUpvotes($post->getId());
-            } else {
-                $postRepository->incDownvotes($post->getId());
-            }
+            $postRepository->updateVotes($post->getId(), $vote->getValue(), 1);
             $manager->persist($vote);
             $manager->flush();
         } catch (UniqueConstraintViolationException $exception) {
+            $postRepository->updateVotes($post->getId(), $vote->getValue(), -1);
             return new JsonResponse([
                 'error' => 'You can only vote once'
             ], 400);

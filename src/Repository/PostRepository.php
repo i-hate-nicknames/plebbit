@@ -91,27 +91,24 @@ class PostRepository extends ServiceEntityRepository
         return $rsm;
     }
 
-    public function incDownvotes(int $id)
+    /**
+     * Update number of votes for the given post value with diff
+     * If $voteValue is -1 then update total downvotes, otherwise update
+     * total upvotes
+     * @param int $id
+     * @param int $voteValue
+     * @param int $diff
+     */
+    public function updateVotes(int $id, int $voteValue, int $diff)
     {
-        $this->updateDownvotesNumber($id, 1);
+        if ($voteValue === 1) {
+            $this->updateUpvotes($id, $diff);
+        } else {
+            $this->updateDownvotes($id, $diff);
+        }
     }
 
-    public function decDownvotes(int $id)
-    {
-        $this->updateDownvotesNumber($id, -1);
-    }
-
-    public function incUpvotes(int $id)
-    {
-        $this->updateUpvotesNumber($id, 1);
-    }
-
-    public function decUpvotes(int $id)
-    {
-        $this->updateUpvotesNumber($id, -1);
-    }
-
-    private function updateDownvotesNumber(int $id, int $diff)
+    private function updateDownvotes(int $id, int $diff)
     {
         $q = $this->createQueryBuilder('p')
             ->update()
@@ -123,7 +120,7 @@ class PostRepository extends ServiceEntityRepository
         $q->execute();
     }
 
-    private function updateUpvotesNumber(int $id, int $diff)
+    private function updateUpvotes(int $id, int $diff)
     {
         $q = $this->createQueryBuilder('p')
             ->update()
