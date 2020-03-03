@@ -68,6 +68,16 @@ class Post implements OwnedResource
      */
     private $comments;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $totalUpvotes;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $totalDownvotes;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
@@ -214,5 +224,29 @@ class Post implements OwnedResource
     public function setComments(ArrayCollection $commentTree)
     {
         $this->comments = $commentTree;
+    }
+
+    public function getTotalUpvotes(): ?int
+    {
+        return $this->totalUpvotes;
+    }
+
+    public function setTotalUpvotes(int $totalUpvotes): self
+    {
+        $this->totalUpvotes = $totalUpvotes;
+
+        return $this;
+    }
+
+    public function getTotalDownvotes(): ?int
+    {
+        return $this->totalDownvotes;
+    }
+
+    public function setTotalDownvotes(int $totalDownvotes): self
+    {
+        $this->totalDownvotes = $totalDownvotes;
+
+        return $this;
     }
 }
