@@ -58,7 +58,7 @@ class District implements OwnedResource
     /**
      * @ORM\Column(type="integer")
      */
-    private $numSubscribed;
+    private $numSubscribed = 0;
 
     public function __construct()
     {

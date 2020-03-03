@@ -143,10 +143,11 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         $manager = $this->getDoctrine()->getManager();
-        $repository = $manager->getRepository(PostVote::class);
+        $voteRepository = $manager->getRepository(PostVote::class);
+        $postRepository = $manager->getRepository(Post::class);
         /** @var User $user */
         $user = $this->getUser();
-        $existingVote = $repository->findByUserAndPost($user, $post);
+        $existingVote = $voteRepository->findByUserAndPost($user, $post);
         $content = json_decode($request->getContent(), true);
         $value = $content['value'] ?? 0;
         if ($value != 1 && $value != -1) {
@@ -155,9 +156,13 @@ class PostController extends AbstractController
             ], 400);
         }
         if ($existingVote !== null) {
-            $manager->remove($existingVote);
-            $manager->flush();
+            if ($existingVote->getValue() === -1) {
+                $postRepository->decDownvotes($post->getId());
+            } else {
+                $postRepository->decUpvotes($post->getId());
+            }
             if ($value === $existingVote->getValue()) {
+                $manager->flush();
                 return new JsonResponse([], 204);
             }
         }
@@ -168,6 +173,11 @@ class PostController extends AbstractController
             ->setCreatedAt(new DateTime('now', new DateTimeZone('UTC')));
 
         try {
+            if ($vote->getValue() === 1) {
+                $postRepository->incUpvotes($post->getId());
+            } else {
+                $postRepository->incDownvotes($post->getId());
+            }
             $manager->persist($vote);
             $manager->flush();
         } catch (UniqueConstraintViolationException $exception) {

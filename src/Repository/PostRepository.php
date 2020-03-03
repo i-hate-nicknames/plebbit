@@ -90,4 +90,48 @@ class PostRepository extends ServiceEntityRepository
             ->addScalarResult('current_vote', 'currentVote', \Doctrine\DBAL\Types\Type::INTEGER);
         return $rsm;
     }
+
+    public function incDownvotes(int $id)
+    {
+        $this->updateDownvotesNumber($id, 1);
+    }
+
+    public function decDownvotes(int $id)
+    {
+        $this->updateDownvotesNumber($id, -1);
+    }
+
+    public function incUpvotes(int $id)
+    {
+        $this->updateUpvotesNumber($id, 1);
+    }
+
+    public function decUpvotes(int $id)
+    {
+        $this->updateUpvotesNumber($id, -1);
+    }
+
+    private function updateDownvotesNumber(int $id, int $diff)
+    {
+        $q = $this->createQueryBuilder('p')
+            ->update()
+            ->set('p.totalDownvotes', 'p.totalDownvotes + :diff')
+            ->setParameter('diff', $diff)
+            ->where('p.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery();
+        $q->execute();
+    }
+
+    private function updateUpvotesNumber(int $id, int $diff)
+    {
+        $q = $this->createQueryBuilder('p')
+            ->update()
+            ->set('p.totalUpvotes', 'p.totalUpvotes + :diff')
+            ->setParameter('diff', $diff)
+            ->where('p.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery();
+        $q->execute();
+    }
 }

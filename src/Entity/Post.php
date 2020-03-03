@@ -71,12 +71,12 @@ class Post implements OwnedResource
     /**
      * @ORM\Column(type="integer")
      */
-    private $totalUpvotes;
+    private $totalUpvotes = 0;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $totalDownvotes;
+    private $totalDownvotes = 0;
 
     public function __construct()
     {
