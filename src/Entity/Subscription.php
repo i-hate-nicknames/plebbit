@@ -20,13 +20,13 @@ class Subscription
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="subscriptions")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="subscriptions", fetch="EAGER")
      * @ORM\JoinColumn(nullable=false)
      */
     private $user;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\District", inversedBy="subscriptions")
+     * @ORM\ManyToOne(targetEntity="App\Entity\District", inversedBy="subscriptions", fetch="EAGER")
      * @ORM\JoinColumn(nullable=false)
      */
     private $district;

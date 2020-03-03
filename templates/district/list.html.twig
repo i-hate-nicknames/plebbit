@@ -4,23 +4,23 @@
 
 {% block body %}
 
-{% for districtData in districtsData %}
-    {% set district = districtData.district %}
+{% for district in districts %}
     <div class="district">
         <div class="name">
             <a href="{{ url('district', {name: district.name}) }}">{{ district.name }}</a>
         </div>
+        {% set subscribed = (app.user is null) ? false : app.user.isSubscribed(district) %}
         <div class="subscription">
-            <a href="#" class="subscribe-link" data-is-subscribed="{{ districtData.isSubscribed }}">
-                {% if districtData.isSubscribed %}
+            <a href="#" class="subscribe-link" data-is-subscribed="{{ subscribed ? 1 : 0 }}">
+                {% if subscribed %}
                 unsubscribe
                 {% else %}
                 subscribe
                 {% endif %}
             </a>
         </div>
-        <div class="is-subscribed">{{ districtData.isSubscribed }}</div>
-        <div class="subscribers-number">{{ districtData.numSubscribers }}</div>
+        <div class="is-subscribed">{{ subscribed ? 1 : 0 }}</div>
+        <div class="subscribers-number">{{ district.numSubscribed }}</div>
     </div>
 {% endfor %}
 {% endblock %}
